@@ -1,12 +1,15 @@
 from nete.util.json_util import default_serialize
+from nete.util.lockable import Lockable
 from .exceptions import NotFound
 from concurrent.futures import ThreadPoolExecutor
 import asyncio
+import contextlib
 import datetime
 import functools
 import glob
 import json
 import logging
+import os
 import os.path
 import uuid
 
@@ -14,12 +17,22 @@ import uuid
 logger = logging.getLogger(__name__)
 
 
-class FilesystemStorage:
+class FilesystemStorage(Lockable):
 
-    def __init__(self, base_dir):
-        self.base_dir = base_dir
+    def __init__(self):
         self.executor = ThreadPoolExecutor()
 
+    @contextlib.contextmanager
+    def open(self, base_dir):
+        self.base_dir = base_dir
+
+        try:
+            self.lock(os.path.join(self.base_dir, '.lock'))
+            yield
+        finally:
+            self.unlock()
+
+    @Lockable.ensure_lock
     async def list(self):
         note_list = []
         for filename in glob.glob(os.path.join(self.base_dir, '*.nete')):
@@ -36,6 +49,7 @@ class FilesystemStorage:
     async def read(self, id):
         return await self._read_file(self._filename(id))
 
+    @Lockable.ensure_lock
     async def write(self, note):
         now = datetime.datetime.utcnow()
         if note.get('id') is None:
@@ -53,6 +67,7 @@ class FilesystemStorage:
 
         return note
 
+    @Lockable.ensure_lock
     async def delete(self, note_id):
         filename = self._filename(note_id)
         if not os.path.exists(filename):

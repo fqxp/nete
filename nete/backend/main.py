@@ -8,8 +8,8 @@ import logging
 DEBUG = True
 
 
-def setup_routes(app):
-    handler = Handler(FilesystemStorage('./notes'))
+def setup_routes(app, storage):
+    handler = Handler(storage)
     app.router.add_get('/notes', handler.index)
     app.router.add_post('/notes', handler.create_note)
     app.router.add_get('/notes/{note_id}', handler.get_note, name='note')
@@ -20,10 +20,12 @@ def setup_routes(app):
 def main():
     logging.basicConfig(level=logging.DEBUG)
 
-    app = web.Application(
-        middlewares=[storage_exceptions_middleware]
-        )
-    setup_routes(app)
-    if DEBUG:
-        aioreloader.start()
-    web.run_app(app, host='127.0.0.1', port=8080)
+    storage = FilesystemStorage()
+    with storage.open('./notes'):
+        app = web.Application(
+            middlewares=[storage_exceptions_middleware]
+            )
+        setup_routes(app, storage)
+        if DEBUG:
+            aioreloader.start()
+        web.run_app(app, host='127.0.0.1', port=8080)
