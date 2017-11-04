@@ -2,11 +2,11 @@ from nete.util.json_util import default_serialize
 from nete.util.lockable import Lockable
 from .exceptions import NotFound
 from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
 import asyncio
 import contextlib
 import datetime
 import functools
-import glob
 import json
 import logging
 import os
@@ -24,10 +24,10 @@ class FilesystemStorage(Lockable):
 
     @contextlib.contextmanager
     def open(self, base_dir):
-        self.base_dir = base_dir
+        self.base_dir = Path(base_dir)
 
         try:
-            self.lock(os.path.join(self.base_dir, '.lock'))
+            self.lock(self.base_dir / '.lock')
             yield
         finally:
             self.unlock()
@@ -35,7 +35,7 @@ class FilesystemStorage(Lockable):
     @Lockable.ensure_lock
     async def list(self):
         note_list = []
-        for filename in glob.glob(os.path.join(self.base_dir, '*.nete')):
+        for filename in self.base_dir.glob('*.nete'):
             note = await self._read_file(filename)
             note_list.append(
                 {
@@ -87,4 +87,4 @@ class FilesystemStorage(Lockable):
             raise NotFound()
 
     def _filename(self, id):
-        return os.path.join(self.base_dir, '{}.nete'.format(id))
+        return self.base_dir / '{}.nete'.format(id)
