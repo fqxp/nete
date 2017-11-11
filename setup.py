@@ -12,6 +12,12 @@ setup(
     install_requires=[
         'python-dateutil',
     ],
+    setup_requires=[
+        'pytest-runner',
+    ],
+    tests_require=[
+        'pytest',
+    ],
     packages=find_packages(exclude=['*.tests']),
     entry_points={
         'console_scripts': [

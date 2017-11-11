@@ -1,4 +1,5 @@
 from nete.util.json_util import default_serialize, note_object_hook
+from nete.backend.storage.exceptions import NotFound
 from aiohttp import web
 import json
 
@@ -40,11 +41,14 @@ class Handler:
                 "$ref": "#/components/schemas/Note"
         """
         note_id = request.match_info['note_id']
-        note = await self.storage.read(note_id)
-        return web.Response(
-            status=200,
-            content_type='application/json',
-            body=json.dumps(note, default=default_serialize).encode('utf-8'))
+        try:
+            note = await self.storage.read(note_id)
+            return web.Response(
+                status=200,
+                content_type='application/json',
+                body=json.dumps(note, default=default_serialize).encode('utf-8'))
+        except NotFound:
+            return web.HTTPNotFound()
 
     async def create_note(self, request):
         """
@@ -100,5 +104,8 @@ class Handler:
             description: Successful operation.
         """
         note_id = request.match_info['note_id']
-        await self.storage.delete(note_id)
-        return web.Response(status=204)
+        try:
+            await self.storage.delete(note_id)
+            return web.Response(status=204)
+        except NotFound:
+            return web.HTTPNotFound()

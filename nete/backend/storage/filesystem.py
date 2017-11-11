@@ -6,6 +6,7 @@ from pathlib import Path
 import asyncio
 import contextlib
 import datetime
+import dateutil.parser
 import functools
 import json
 import logging
@@ -54,6 +55,7 @@ class FilesystemStorage(Lockable):
         now = datetime.datetime.utcnow()
         if note.get('id') is None:
             note['id'] = str(uuid.uuid4())
+        if note.get('created_at') is None:
             note['created_at'] = now
         note['updated_at'] = now
 
@@ -81,8 +83,12 @@ class FilesystemStorage(Lockable):
         try:
             with open(filename) as fp:
                 loop = asyncio.get_event_loop()
-                data = await loop.run_in_executor(self.executor, json.load, fp)
-                return data
+                note = await loop.run_in_executor(self.executor, json.load, fp)
+                if 'created_at' in note:
+                    note['created_at'] = dateutil.parser.parse(note['created_at'])
+                if 'updated_at' in note:
+                    note['updated_at'] = dateutil.parser.parse(note['updated_at'])
+                return note
         except FileNotFoundError:
             raise NotFound()
 

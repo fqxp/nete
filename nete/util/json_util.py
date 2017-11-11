@@ -17,13 +17,10 @@ def note_object_hook(obj):
     """
     Object hook for use with `json.load`.
     """
-    obj['created_at'] = (
-        dateutil.parser.parse(obj['created_at'])
-        if obj.get('created_at')
-        else None)
-    obj['updated_at'] = (
-        dateutil.parser.parse(obj['updated_at'])
-        if obj.get('updated_at')
-        else None)
+    if obj.get('created_at'):
+        obj['created_at'] = dateutil.parser.parse(obj['created_at'])
+
+    if obj.get('updated_at'):
+        obj['updated_at'] = dateutil.parser.parse(obj['updated_at'])
 
     return obj
