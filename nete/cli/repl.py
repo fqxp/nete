@@ -21,7 +21,7 @@ class Repl(cmd.Cmd):
         '''ls    list notes'''
         notes = self.nete_client.list()
         for note in notes:
-            print('{id:.8}   {title}'.format(**note))
+            print('{id}   {title}'.format(**note))
 
     def do_cat(self, line):
         '''cat NOTE-ID [NOTE-ID…]   print note(s)'''
@@ -34,6 +34,7 @@ class Repl(cmd.Cmd):
                 print('{} not found.'.format(note_id))
 
     def do_new(self, line):
+        '''new    create note'''
         title = input('Enter title for new note: ')
         note = {
             'id': None,
@@ -101,8 +102,11 @@ def edit_note(note):
     with tempfile.NamedTemporaryFile(prefix='nete') as fp:
         fp.write(render_editable_note(note).encode('utf-8'))
         fp.flush()
-        result = subprocess.run([os.environ.get('EDITOR'), fp.name])
+        result = subprocess.run(
+            '{} {}'.format(os.environ.get('EDITOR'), fp.name),
+            shell=True)
         if result.returncode == 0:
+            # FIXME: what do to else?
             fp.seek(0)
             data = fp.read().decode('utf-8')
             note.update(parse_editable_note(data, note))

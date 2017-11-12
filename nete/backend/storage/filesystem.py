@@ -47,6 +47,7 @@ class FilesystemStorage(Lockable):
 
         return note_list
 
+    @Lockable.ensure_lock
     async def read(self, id):
         return await self._read_file(self._filename(id))
 
@@ -85,9 +86,15 @@ class FilesystemStorage(Lockable):
                 loop = asyncio.get_event_loop()
                 note = await loop.run_in_executor(self.executor, json.load, fp)
                 if 'created_at' in note:
-                    note['created_at'] = dateutil.parser.parse(note['created_at'])
+                    try:
+                        note['created_at'] = dateutil.parser.parse(note['created_at'])
+                    except TypeError:
+                        pass
                 if 'updated_at' in note:
-                    note['updated_at'] = dateutil.parser.parse(note['updated_at'])
+                    try:
+                        note['updated_at'] = dateutil.parser.parse(note['updated_at'])
+                    except TypeError:
+                        pass
                 return note
         except FileNotFoundError:
             raise NotFound()

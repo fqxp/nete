@@ -7,6 +7,10 @@ class NotFound(Exception):
     pass
 
 
+class ServerError(Exception):
+    pass
+
+
 class NeteClient:
 
     def __init__(self, base_url):
@@ -27,7 +31,7 @@ class NeteClient:
 
     def update_note(self, note):
         response = self._put(
-            '/notes/{}', note['id'],
+            '/notes/{}'.format(note['id']),
             data=json.dumps(note, default=default_serialize))
 
     def delete_note(self, note_id):
@@ -63,6 +67,8 @@ class NeteClient:
         response = self.session.send(request.prepare())
         if response.status_code == 404:
             raise NotFound('URL {} not found'.format(request.url))
+        elif response.status_code == 500:
+            raise ServerError(response.text)
         return response
 
     def _url(self, path, *args, **kwargs):
