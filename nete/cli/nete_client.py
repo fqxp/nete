@@ -1,6 +1,6 @@
-from nete.util.json_util import default_serialize, note_object_hook
 import json
 import requests
+from nete.util.json_util import default_serialize, note_object_hook
 
 
 class NotFound(Exception):
@@ -30,12 +30,12 @@ class NeteClient:
             ).json(object_hook=note_object_hook)
 
     def update_note(self, note):
-        response = self._put(
+        self._put(
             '/notes/{}'.format(note['id']),
             data=json.dumps(note, default=default_serialize))
 
     def delete_note(self, note_id):
-        response = self._delete('/notes/{}', note_id)
+        self._delete('/notes/{}', note_id)
 
     def _get(self, path, *args, **kwargs):
         request = requests.Request(
@@ -64,12 +64,17 @@ class NeteClient:
         return self._send(request)
 
     def _send(self, request):
-        response = self.session.send(request.prepare())
-        if response.status_code == 404:
-            raise NotFound('URL {} not found'.format(request.url))
-        elif response.status_code == 500:
-            raise ServerError(response.text)
-        return response
+        try:
+            response = self.session.send(request.prepare())
+            response.raise_for_status()
+            return response
+        except requests.HTTPError as exc:
+            if exc.response.status_code == 404:
+                raise NotFound('URL {} not found'.format(request.url))
+            elif exc.response.status_code >= 500:
+                raise ServerError(response.text)
+            else:
+                raise
 
     def _url(self, path, *args, **kwargs):
         path = path.lstrip('/').format(*args, **kwargs)
