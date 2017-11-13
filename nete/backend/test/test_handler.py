@@ -30,11 +30,13 @@ class AsyncMock(unittest.mock.MagicMock):
 
 class TestHandler:
 
-    storage = AsyncMock()
+    @pytest.fixture
+    def storage(self):
+        return AsyncMock()
 
     @pytest.fixture
-    def handler(self):
-        return Handler(self.storage)
+    def handler(self, storage):
+        return Handler(storage)
 
     @pytest.fixture
     def client(self, loop, test_client, handler):
@@ -46,47 +48,47 @@ class TestHandler:
         app.router.add_post('/notes', handler.create_note)
         return loop.run_until_complete(test_client(app))
 
-    async def test_index(self, client):
-        self.storage.list.return_value = [{'title': 'foo'}, {'title': 'bar'}]
+    async def test_index(self, client, storage):
+        storage.list.return_value = [{'title': 'foo'}, {'title': 'bar'}]
         response = await client.get('/notes')
         assert response.status == 200
         assert response.content_type == 'application/json'
         assert json.loads(await response.text()) == [{'title': 'foo'}, {'title': 'bar'}]
 
-    async def test_get_note(self, client):
-        self.storage.read.return_value = {'title': 'foo'}
+    async def test_get_note(self, client, storage):
+        storage.read.return_value = {'title': 'foo'}
         response = await client.get('/notes/EXISTING')
         assert response.status == 200
         assert response.content_type == 'application/json'
         assert json.loads(await response.text()) == {'title': 'foo'}
 
-    async def test_get_note_returns_404_when_not_found(self, client):
-        self.storage.read.side_effect = NotFound()
+    async def test_get_note_returns_404_when_not_found(self, client, storage):
+        storage.read.side_effect = NotFound()
         response = await client.get('/notes/NOT-EXISTING')
         assert response.status == 404
 
-    async def test_create_note(self, client):
-        self.storage.write.return_value = {'id': 'NEW-ID', 'title': 'TITLE'}
+    async def test_create_note(self, client, storage):
+        storage.write.return_value = {'id': 'NEW-ID', 'title': 'TITLE'}
         response = await client.post('/notes', json={'title': 'TITLE'})
         assert response.status == 201
         assert response.content_type == 'application/json'
         assert response.headers['location'] == '/notes/NEW-ID'
         assert json.loads(await response.text()) == {'id': 'NEW-ID', 'title': 'TITLE'}
 
-    async def test_update_note(self, client):
+    async def test_update_note(self, client, storage):
         response = await client.put('/notes/ID', json={'title': 'TITLE'})
-        self.storage.write.assert_called_with({'id': 'ID', 'title': 'TITLE'})
+        storage.write.assert_called_with({'id': 'ID', 'title': 'TITLE'})
         assert response.status == 204
         assert await response.text() == ''
 
-    async def test_delete_note(self, client):
+    async def test_delete_note(self, client, storage):
         response = await client.delete('/notes/ID')
-        self.storage.delete.assert_called_with('ID')
+        storage.delete.assert_called_with('ID')
         assert response.status == 204
         assert await response.text() == ''
 
-    async def test_delete_note_return_404_when_not_found(self, client):
-        self.storage.delete.side_effect = NotFound()
+    async def test_delete_note_return_404_when_not_found(self, client, storage):
+        storage.delete.side_effect = NotFound()
         response = await client.delete('/notes/NOT-EXISTING')
-        self.storage.delete.assert_called_with('NOT-EXISTING')
+        storage.delete.assert_called_with('NOT-EXISTING')
         assert response.status == 404
