@@ -85,10 +85,15 @@ class Handler:
             description: Successful operation.
         """
         note_id = request.match_info['note_id']
-        note = json.loads(await request.content.read(),
-                          object_hook=note_object_hook)
-        note['id'] = note_id
+        note = json.loads(
+            await request.content.read(),
+            object_hook=note_object_hook)
+        if note['id'] != note_id:
+            return web.HTTPUnprocessableEntity()
+        # check whether item already exists
+        await self.storage.read(note_id)
         await self.storage.write(note)
+
         return web.Response(status=204)
 
     async def delete_note(self, request):

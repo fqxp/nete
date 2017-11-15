@@ -1,5 +1,6 @@
 from nete.backend.handler import Handler
 from nete.backend.storage.exceptions import NotFound
+from nete.backend.middleware import storage_exceptions_middleware
 from aiohttp import web
 import json
 import pytest
@@ -40,7 +41,9 @@ class TestHandler:
 
     @pytest.fixture
     def client(self, loop, test_client, handler):
-        app = web.Application()
+        app = web.Application(
+            middlewares=[storage_exceptions_middleware]
+        )
         app.router.add_get('/notes', handler.index)
         app.router.add_get('/notes/{note_id}', handler.get_note, name='note')
         app.router.add_put('/notes/{note_id}', handler.update_note)
@@ -76,10 +79,23 @@ class TestHandler:
         assert json.loads(await response.text()) == {'id': 'NEW-ID', 'title': 'TITLE'}
 
     async def test_update_note(self, client, storage):
-        response = await client.put('/notes/ID', json={'title': 'TITLE'})
+        storage.read.return_value = {'id': 'ID', 'title': 'foo', 'text': 'hello world'}
+        response = await client.put('/notes/ID', json={'id': 'ID', 'title': 'TITLE'})
         storage.write.assert_called_with({'id': 'ID', 'title': 'TITLE'})
         assert response.status == 204
         assert await response.text() == ''
+
+    async def test_update_note_returns_404(self, client, storage):
+        storage.read.side_effect = NotFound()
+        response = await client.put('/notes/ID',
+                                    json={'id': 'ID', 'title': 'TITLE'})
+        storage.write.assert_not_called()
+        assert response.status == 404
+
+    async def test_update_note_returns_422_if_ids_dont_match(self, client, storage):
+        response = await client.put('/notes/ID', json={'id': 'OTHER-ID', 'title': 'TITLE'})
+        storage.write.assert_not_called()
+        assert response.status == 422
 
     async def test_delete_note(self, client, storage):
         response = await client.delete('/notes/ID')
