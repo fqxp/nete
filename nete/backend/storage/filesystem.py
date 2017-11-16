@@ -4,7 +4,6 @@ from .exceptions import NotFound
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 import asyncio
-import contextlib
 import datetime
 import dateutil.parser
 import functools
@@ -23,15 +22,12 @@ class FilesystemStorage(Lockable):
     def __init__(self):
         self.executor = ThreadPoolExecutor()
 
-    @contextlib.contextmanager
     def open(self, base_dir):
         self.base_dir = Path(base_dir)
+        self.lock(self.base_dir / '.lock')
 
-        try:
-            self.lock(self.base_dir / '.lock')
-            yield
-        finally:
-            self.unlock()
+    def close(self):
+        self.unlock()
 
     @Lockable.ensure_lock
     async def list(self):
