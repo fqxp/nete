@@ -1,6 +1,6 @@
 from aiohttp import web
 from .handler import Handler
-from .middleware import storage_exceptions_middleware
+from .middleware import add_server_header, storage_exceptions_middleware
 from .storage.filesystem import FilesystemStorage
 import aioreloader
 import argparse
@@ -44,6 +44,7 @@ def main():
     try:
         app = web.Application(
             middlewares=[
+                add_server_header,
                 storage_exceptions_middleware,
             ])
         setup_routes(app, storage)
