@@ -1,12 +1,14 @@
-from aiohttp import web
 from .handler import Handler
 from .middleware import add_server_header, storage_exceptions_middleware
 from .storage.filesystem import FilesystemStorage
-import aioreloader
+from aiohttp import web
 import argparse
 import logging
+try:
+    import aioreloader
+except ModuleNotFoundError:
+    aioreloader = None
 
-DEBUG = True
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +40,7 @@ def main():
 
     storage.open('./notes')
 
-    if DEBUG:
+    if args.debug and aioreloader:
         aioreloader.start(hook=storage.close)
 
     try:
