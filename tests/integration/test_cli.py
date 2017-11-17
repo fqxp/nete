@@ -9,7 +9,7 @@ import tempfile
 def server():
     process = pexpect.spawn('nete-backend',
                             logfile=open('.pexpect-server.log', 'wb'))
-    process.expect('.*Running on.*')
+    process.expect('.*starting server on.*')
     yield
     process.terminate()
     try:

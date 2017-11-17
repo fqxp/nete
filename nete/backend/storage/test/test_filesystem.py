@@ -11,8 +11,11 @@ class TestFilesystemStorage:
     def storage(self):
         storage = FilesystemStorage()
         with tempfile.TemporaryDirectory() as tmp_dir:
-            with storage.open(tmp_dir):
+            storage.open(tmp_dir)
+            try:
                 yield storage
+            finally:
+                storage.close()
 
     @pytest.fixture
     def new_note(self):
