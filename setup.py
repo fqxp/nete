@@ -10,13 +10,23 @@ setup(
     license='GPL',
     url='https://github.com/fqxp/nete-backend',
     install_requires=[
+        'aiohttp',
         'python-dateutil',
+        'requests',
+        'requests-unixsocket',
     ],
     setup_requires=[
         'pytest-runner',
     ],
     tests_require=[
+        'aioreloader',
+        'pexpect',
         'pytest',
+        'pytest-aiohttp',
+        'pytest-asyncio',
+        'pytest-freezegun',
+        'pytest-runner',
+        'requests-mock',
     ],
     packages=find_packages(exclude=['*.tests']),
     entry_points={
