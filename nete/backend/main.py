@@ -1,5 +1,4 @@
-from .handler import Handler
-from .middleware import add_server_header, storage_exceptions_middleware
+from .app import create_app
 from .storage.filesystem import FilesystemStorage
 from aiohttp import web
 import argparse
@@ -9,17 +8,7 @@ try:
 except ModuleNotFoundError:
     aioreloader = None
 
-
 logger = logging.getLogger(__name__)
-
-
-def setup_routes(app, storage):
-    handler = Handler(storage)
-    app.router.add_get('/notes', handler.index)
-    app.router.add_post('/notes', handler.create_note)
-    app.router.add_get('/notes/{note_id}', handler.get_note, name='note')
-    app.router.add_put('/notes/{note_id}', handler.update_note)
-    app.router.add_delete('/notes/{note_id}', handler.delete_note)
 
 
 def parse_args():
@@ -37,19 +26,14 @@ def main():
     logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO)
 
     storage = FilesystemStorage()
-
     storage.open('./notes')
+
+    app = create_app(storage)
 
     if args.debug and aioreloader:
         aioreloader.start(hook=storage.close)
 
     try:
-        app = web.Application(
-            middlewares=[
-                add_server_header,
-                storage_exceptions_middleware,
-            ])
-        setup_routes(app, storage)
 
         if args.socket:
             logger.info('starting server on socket {}'.format(args.socket))
