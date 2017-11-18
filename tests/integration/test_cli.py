@@ -12,6 +12,7 @@ def server():
     process.expect('.*starting server on.*')
     yield
     process.terminate()
+        print(
     try:
         process.wait()
     except subprocess.TimeoutExpired:
@@ -51,7 +52,7 @@ def editor():
 
 @pytest.fixture
 def client(editor):
-    env = {'PATH': os.environ['PATH']}
+    env = os.environ.copy()
     env.update(editor.env())
     return pexpect.spawn(
         'nete',
