@@ -1,5 +1,7 @@
 _pre-alpha_
 
+[![Build Status](https://travis-ci.org/fqxp/nete-backend.svg?branch=master)](https://travis-ci.org/fqxp/nete-backend)
+
 ## Installation
 
 Run:
