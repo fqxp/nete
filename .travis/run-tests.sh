@@ -3,9 +3,10 @@
 echo '===== RUNNING TESTS ====='
 
 ./setup.py test
+EXIT_CODE=$?
 
 echo '===== pexpect-server.log ====='
-cat .pexpect-server.log
+cat /tmp/pexpect-server.log
 echo
-echo '===== pexpect-cli.log ====='
-cat .pexpect-cli.log
+
+exit $EXIT_CODE
