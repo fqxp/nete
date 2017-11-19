@@ -7,17 +7,12 @@ import tempfile
 
 @pytest.fixture
 def server():
-    process = pexpect.spawn('nete-backend',
-                            logfile=open('.pexpect-server.log', 'wb'))
-    process.expect('.*starting server on.*')
-    yield
-    process.terminate()
-        print(
-    try:
-        process.wait()
-    except subprocess.TimeoutExpired:
-        process.kill()
-        process.wait()
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        process = pexpect.spawn(
+            'nete-backend --storage filesystem --storage-base-dir {}'.format(tmp_dir),
+            logfile=open('.pexpect-server.log', 'wb'))
+        process.expect('.*starting server on.*')
+        yield
 
 
 class Editor:

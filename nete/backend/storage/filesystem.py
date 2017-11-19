@@ -19,11 +19,11 @@ logger = logging.getLogger(__name__)
 
 class FilesystemStorage(Lockable):
 
-    def __init__(self):
+    def __init__(self, base_dir):
+        self.base_dir = Path(base_dir)
         self.executor = ThreadPoolExecutor()
 
-    def open(self, base_dir):
-        self.base_dir = Path(base_dir)
+    def open(self):
         self.lock(self.base_dir / '.lock')
 
     def close(self):

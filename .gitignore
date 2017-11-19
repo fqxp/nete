@@ -102,3 +102,4 @@ ENV/
 
 # custom
 .pexpect*.log
+nete.rc

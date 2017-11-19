@@ -1,0 +1,10 @@
+[api]
+type = socket
+path = ./test.sock
+; type = tcp
+; host = localhost
+; port = 8080
+
+[storage]
+type = filesystem
+base_dir = ../notes

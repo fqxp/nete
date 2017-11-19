@@ -9,9 +9,9 @@ class TestFilesystemStorage:
 
     @pytest.fixture
     def storage(self):
-        storage = FilesystemStorage()
         with tempfile.TemporaryDirectory() as tmp_dir:
-            storage.open(tmp_dir)
+            storage = FilesystemStorage(tmp_dir)
+            storage.open()
             try:
                 yield storage
             finally:
