@@ -8,7 +8,8 @@ class NotFound(Exception):
 
 
 class ServerError(Exception):
-    pass
+    def __init__(self, error):
+        self.error = error
 
 
 class NeteClient:
@@ -69,12 +70,11 @@ class NeteClient:
             response.raise_for_status()
             return response
         except requests.HTTPError as exc:
-            if exc.response.status_code == 404:
+            status_code = exc.response.status_code
+            if status_code == 404:
                 raise NotFound('URL {} not found'.format(request.url))
-            elif exc.response.status_code >= 500:
-                raise ServerError(response.text)
             else:
-                raise
+                raise ServerError(response.text)
 
     def _url(self, path, *args, **kwargs):
         path = path.lstrip('/').format(*args, **kwargs)

@@ -1,4 +1,4 @@
-from .nete_client import NotFound
+from .nete_client import NotFound, ServerError
 import cmd
 import os
 import re
@@ -16,6 +16,12 @@ class Repl(cmd.Cmd):
     @property
     def prompt(self):
         return 'nete [%s]> ' % self.context
+
+    def onecmd(self, s):
+        try:
+            return super().onecmd(s)
+        except ServerError as e:
+            print('Error while communication with backend: {}'.format(e.error))
 
     def do_ls(self, line):
         '''ls    list notes'''
