@@ -1,6 +1,6 @@
 from nete.util.json_util import default_serialize
-from nete.util.lockable import Lockable
-from .exceptions import NotFound
+from .lockable import Lockable
+from nete.backend.storage.exceptions import NotFound
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 import asyncio
