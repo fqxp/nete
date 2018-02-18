@@ -66,15 +66,15 @@ class Handler:
               "application/json":
                 "$ref": "#/components/schemas/Note"
         """
-        note = json.loads(await request.content.read(),
+        note = json.loads(await request.text(),
                           object_hook=note_object_hook)
-        note = await self.storage.write(note)
-        note_url = request.app.router['note'].url_for(note_id=note['id'])
+        saved_note = await self.storage.write(note)
+        note_url = request.app.router['note'].url_for(note_id=saved_note['id'])
         return web.Response(
             status=201,
             content_type='application/json',
             headers={'Location': str(note_url)},
-            body=json.dumps(note, default=default_serialize).encode('utf-8'))
+            body=json.dumps(saved_note, default=default_serialize).encode('utf-8'))
 
     async def update_note(self, request):
         """

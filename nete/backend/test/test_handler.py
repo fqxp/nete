@@ -5,6 +5,7 @@ from aiohttp import web
 import json
 import pytest
 import unittest.mock
+import uuid
 
 
 class MockStorage:
@@ -71,12 +72,20 @@ class TestHandler:
         assert response.status == 404
 
     async def test_create_note(self, client, storage):
-        storage.write.return_value = {'id': 'NEW-ID', 'title': 'TITLE'}
-        response = await client.post('/notes', json={'title': 'TITLE'})
+        id = uuid.uuid4()
+        storage.write.return_value = {
+            'id': str(id),
+            'title': 'TITLE',
+            'text': 'TEXT'
+        }
+        response = await client.post('/notes',
+                                     json={'title': 'TITLE', 'text': 'TEXT'})
         assert response.status == 201
         assert response.content_type == 'application/json'
-        assert response.headers['location'] == '/notes/NEW-ID'
-        assert json.loads(await response.text()) == {'id': 'NEW-ID', 'title': 'TITLE'}
+        assert response.headers['location'] == '/notes/{}'.format(str(id))
+        assert json.loads(await response.text()) == {'id': str(id),
+                                                     'title': 'TITLE',
+                                                     'text': 'TEXT'}
 
     async def test_update_note(self, client, storage):
         storage.read.return_value = {'id': 'ID', 'title': 'foo', 'text': 'hello world'}
