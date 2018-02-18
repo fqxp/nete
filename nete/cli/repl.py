@@ -43,7 +43,6 @@ class Repl(cmd.Cmd):
         '''new    create note'''
         title = input('Enter title for new note: ')
         note = {
-            'id': None,
             'title': title,
             'text': '',
         }
@@ -126,7 +125,7 @@ Created-At: {created_at}
 Updated-At: {updated_at}
 
 {text}'''.format(
-    id=note['id'],
+    id=note.get('id', '<not set>'),
     title=note['title'],
     created_at=note.get('created_at', '<not set>'),
     updated_at=note.get('updated_at', '<not set>'),
