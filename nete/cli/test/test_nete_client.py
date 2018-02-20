@@ -66,6 +66,7 @@ class TestNeteClient:
         with pytest.raises(NotFound):
             nete_client.get_note('NON-EXISTING-ID')
 
+    @pytest.mark.freeze_time
     def test_create_note(self, nete_client, server_mock):
         server_mock.post('mock://server/notes', text=json.dumps({
             'id': 'ID',

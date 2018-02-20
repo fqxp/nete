@@ -11,6 +11,7 @@ setup(
     url='https://github.com/fqxp/nete-backend',
     install_requires=[
         'aiohttp',
+        'marshmallow',
         'python-dateutil',
         'requests',
         'requests-unixsocket',

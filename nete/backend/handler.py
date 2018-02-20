@@ -1,7 +1,9 @@
 from nete.util.json_util import default_serialize, note_object_hook
 from nete.backend.storage.exceptions import NotFound
+from nete.schemas.note_schema import NoteSchema
 from aiohttp import web
 import json
+import uuid
 
 
 class Handler:
@@ -23,7 +25,7 @@ class Handler:
         return web.Response(
             status=200,
             content_type='application/json',
-            body=json.dumps(notes, default=default_serialize).encode('utf-8'))
+            body=NoteSchema(many=True).dumps(notes))
 
     async def get_note(self, request):
         """
@@ -46,7 +48,7 @@ class Handler:
             return web.Response(
                 status=200,
                 content_type='application/json',
-                body=json.dumps(note, default=default_serialize).encode('utf-8'))
+                body=NoteSchema().dumps(note))
         except NotFound:
             return web.HTTPNotFound()
 
@@ -66,15 +68,15 @@ class Handler:
               "application/json":
                 "$ref": "#/components/schemas/Note"
         """
-        note = json.loads(await request.text(),
-                          object_hook=note_object_hook)
-        saved_note = await self.storage.write(note)
-        note_url = request.app.router['note'].url_for(note_id=saved_note['id'])
+        note_schema = NoteSchema()
+        note = note_schema.loads(await request.text())
+        await self.storage.write(note)
+        note_url = request.app.router['note'].url_for(note_id=str(note.id))
         return web.Response(
             status=201,
             content_type='application/json',
             headers={'Location': str(note_url)},
-            body=json.dumps(saved_note, default=default_serialize).encode('utf-8'))
+            body=note_schema.dumps(note))
 
     async def update_note(self, request):
         """
@@ -85,10 +87,9 @@ class Handler:
             description: Successful operation.
         """
         note_id = request.match_info['note_id']
-        note = json.loads(
-            await request.content.read(),
-            object_hook=note_object_hook)
-        if note['id'] != note_id:
+        note_schema = NoteSchema()
+        note = note_schema.loads(await request.text())
+        if note.id != uuid.UUID(note_id):
             return web.HTTPUnprocessableEntity()
         # check whether item already exists
         await self.storage.read(note_id)

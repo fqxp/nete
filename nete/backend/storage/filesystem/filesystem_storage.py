@@ -1,17 +1,12 @@
-from nete.util.json_util import default_serialize
 from .lockable import Lockable
 from nete.backend.storage.exceptions import NotFound
+from nete.schemas.note_schema import NoteSchema
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 import asyncio
-import datetime
-import dateutil.parser
-import functools
-import json
 import logging
 import os
 import os.path
-import uuid
 
 
 logger = logging.getLogger(__name__)
@@ -34,12 +29,7 @@ class FilesystemStorage(Lockable):
         note_list = []
         for filename in self.base_dir.glob('*.nete'):
             note = await self._read_file(filename)
-            note_list.append(
-                {
-                    'id': note['id'],
-                    'title': note['title'],
-                    'updated_at': note.get('updated_at'),
-                })
+            note_list.append(note)
 
         return note_list
 
@@ -49,22 +39,10 @@ class FilesystemStorage(Lockable):
 
     @Lockable.ensure_lock
     async def write(self, note):
-        now = datetime.datetime.utcnow()
-        if note.get('id') is None:
-            note['id'] = str(uuid.uuid4())
-        if note.get('created_at') is None:
-            note['created_at'] = now
-        note['updated_at'] = now
-
-        filename = self._filename(note['id'])
+        filename = self._filename(str(note.id))
+        note_schema = NoteSchema()
         with open(filename, 'w') as fp:
-            loop = asyncio.get_event_loop()
-            await loop.run_in_executor(
-              self.executor,
-              functools.partial(json.dump, note, fp,
-                                default=default_serialize))
-
-        return note
+            fp.write(note_schema.dumps(note))
 
     @Lockable.ensure_lock
     async def delete(self, note_id):
@@ -77,21 +55,10 @@ class FilesystemStorage(Lockable):
 
     async def _read_file(self, filename):
         logger.debug('opening file {} for reading'.format(filename))
+        note_schema = NoteSchema()
         try:
-            with open(filename) as fp:
-                loop = asyncio.get_event_loop()
-                note = await loop.run_in_executor(self.executor, json.load, fp)
-                if 'created_at' in note:
-                    try:
-                        note['created_at'] = dateutil.parser.parse(note['created_at'])
-                    except TypeError:
-                        pass
-                if 'updated_at' in note:
-                    try:
-                        note['updated_at'] = dateutil.parser.parse(note['updated_at'])
-                    except TypeError:
-                        pass
-                return note
+            note_data = open(filename).read()
+            return note_schema.loads(note_data)
         except FileNotFoundError:
             raise NotFound()
 
