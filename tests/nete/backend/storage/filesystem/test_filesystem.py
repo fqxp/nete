@@ -1,6 +1,6 @@
 from nete.backend.storage.filesystem import FilesystemStorage
 from nete.backend.storage.exceptions import NotFound
-from nete.schemas.note_schema import NoteSchema
+from nete.common.schemas.note_schema import NoteSchema
 import datetime
 import pytest
 import pytz

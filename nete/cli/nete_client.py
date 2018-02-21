@@ -1,4 +1,4 @@
-from nete.util.json_util import default_serialize, note_object_hook
+from .json_util import default_serialize, note_object_hook
 import datetime
 import json
 import requests
@@ -20,10 +20,12 @@ class NeteClient:
         self.session = requests.Session()
 
     def list(self):
-        return self._get('/notes').json(object_hook=note_object_hook)
+        response = self._get('/notes')
+        return response.json(object_hook=note_object_hook)
 
     def get_note(self, note_id):
-        return self._get('/notes/{}', note_id).json(object_hook=note_object_hook)
+        response = self._get('/notes/{}', note_id)
+        return response.json(object_hook=note_object_hook)
 
     def create_note(self, note):
         return self._post(

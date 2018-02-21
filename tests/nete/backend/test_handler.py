@@ -1,7 +1,7 @@
 from nete.backend.handler import Handler
 from nete.backend.storage.exceptions import NotFound
 from nete.backend.middleware import storage_exceptions_middleware
-from nete.models.note import Note
+from nete.common.models.note import Note
 from aiohttp import web
 import datetime
 import json

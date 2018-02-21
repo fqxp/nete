@@ -1,6 +1,5 @@
-from nete.util.json_util import default_serialize, note_object_hook
 from nete.backend.storage.exceptions import NotFound
-from nete.schemas.note_schema import NoteSchema
+from nete.common.schemas.note_schema import NoteSchema
 from aiohttp import web
 import json
 import uuid

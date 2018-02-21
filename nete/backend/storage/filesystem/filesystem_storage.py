@@ -1,6 +1,6 @@
 from .lockable import Lockable
 from nete.backend.storage.exceptions import NotFound
-from nete.schemas.note_schema import NoteSchema
+from nete.common.schemas.note_schema import NoteSchema
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 import asyncio

@@ -1,5 +1,5 @@
 from marshmallow import Schema, fields, post_load
-from nete.models.note import Note
+from nete.common.models.note import Note
 import datetime
 import uuid
 
