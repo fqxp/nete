@@ -2,7 +2,7 @@
 
 echo '===== RUNNING TESTS ====='
 
-./setup.py test
+pytest
 EXIT_CODE=$?
 
 echo '===== pexpect-server.log ====='
