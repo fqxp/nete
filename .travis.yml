@@ -2,12 +2,10 @@ language: python
 python:
   - "3.6"
 dist: trusty
-sudo: required
 install:
     - pip install -r requirements.txt
     - pip install -r requirements-dev.txt
     - pip install src/nete-common
     - pip install src/nete-backend
     - pip install src/nete-cli
-cache: pip
 script: .travis/run-tests.sh
