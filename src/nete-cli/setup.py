@@ -29,6 +29,7 @@ setup(
     ],
     packages=[
         'nete.cli',
+        'nete.cli.test_utils',
     ],
     entry_points={
         'console_scripts': [

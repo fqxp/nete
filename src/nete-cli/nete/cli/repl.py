@@ -1,9 +1,6 @@
 from .nete_client import NotFound, ServerError
+from .edit_note import edit_note, render_editable_note
 import cmd
-import os
-import re
-import subprocess
-import tempfile
 
 
 class Repl(cmd.Cmd):
@@ -101,51 +98,3 @@ class Repl(cmd.Cmd):
     complete_cat = _complete_note_id_or_title
     complete_edit = _complete_note_id_or_title
     complete_rm = _complete_note_id_or_title
-
-
-def edit_note(note):
-    with tempfile.NamedTemporaryFile(prefix='nete') as fp:
-        fp.write(render_editable_note(note).encode('utf-8'))
-        fp.flush()
-        result = subprocess.run(
-            '{} {}'.format(os.environ.get('EDITOR'), fp.name),
-            shell=True)
-        if result.returncode == 0:
-            # FIXME: what do to else?
-            fp.seek(0)
-            data = fp.read().decode('utf-8')
-            note.update(parse_editable_note(data, note))
-            return note
-
-
-def render_editable_note(note):
-    return '''Title: {title}
-Id: {id}
-Created-At: {created_at}
-Updated-At: {updated_at}
-
-{text}'''.format(
-        id=note.get('id', '<not set>'),
-        title=note['title'],
-        created_at=note.get('created_at', '<not set>'),
-        updated_at=note.get('updated_at', '<not set>'),
-        text=note['text'])
-
-
-def parse_editable_note(formatted_note, original_note):
-    header_data, text = formatted_note.split('\n\n', 1)
-    headers = {
-        key: value
-        for key, value in map(
-            lambda line: re.split(': *', line, 1),
-            header_data.splitlines())
-    }
-
-    attrs = {
-        'title': headers.get('Title'),
-        'text': text,
-    }
-
-    return {
-        key: value for key, value in attrs.items() if value is not None
-    }

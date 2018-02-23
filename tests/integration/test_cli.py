@@ -1,5 +1,5 @@
 from tools.spawn import spawn
-from tools.editor import Editor
+from nete.cli.test_utils.editor import Editor
 import os
 import pexpect
 import pytest
@@ -27,9 +27,8 @@ def server():
 
 @pytest.fixture
 def editor():
-    editor = Editor()
-    yield editor
-    editor.cleanup()
+    with Editor() as editor:
+        yield editor
 
 
 @pytest.fixture
