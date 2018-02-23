@@ -1,9 +1,5 @@
 class Note:
-    def __init__(self,
-                 id=None,
-                 created_at=None,
-                 updated_at=None,
-                 title='',
+    def __init__(self, id=None, created_at=None, updated_at=None, title='',
                  text=''):
         self.id = id
         self.created_at = created_at

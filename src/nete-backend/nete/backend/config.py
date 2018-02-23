@@ -1,9 +1,7 @@
-from nete.backend import storage
 import argparse
 import configparser
 import logging
 import os.path
-import pathlib
 
 logger = logging.getLogger(__name__)
 

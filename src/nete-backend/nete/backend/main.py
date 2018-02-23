@@ -39,7 +39,8 @@ def main():
 
     try:
         if config['api.socket']:
-            logger.info('starting server on socket {}'.format(config['api.socket']))
+            logger.info('starting server on socket {}'
+                        .format(config['api.socket']))
             web.run_app(app, path=config['api.socket'])
         else:
             logger.info('starting server on tcp://{}:{}'.format(

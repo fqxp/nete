@@ -5,8 +5,7 @@ import uuid
 
 
 class NoteSchema(Schema):
-    id = fields.UUID(
-        required=True, allow_none=False, missing=uuid.uuid4)
+    id = fields.UUID(required=True, allow_none=False, missing=uuid.uuid4)
     created_at = fields.DateTime(
         required=True,
         allow_none=False,

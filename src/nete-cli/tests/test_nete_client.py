@@ -1,7 +1,6 @@
-from nete.cli.nete_client import *
+from nete.cli.nete_client import NeteClient, NotFound
 import datetime
 import json
-import requests
 import requests_mock
 import pytest
 
@@ -58,7 +57,8 @@ class TestNeteClient:
             'updated_at': datetime.datetime(2017, 11, 12, 18, 00, 0),
         }
 
-    def test_get_note_raises_NotFound_exception(self, nete_client, server_mock):
+    def test_get_note_raises_NotFound_exception(self, nete_client,
+                                                server_mock):
         server_mock.get(
             'mock://server/notes/NON-EXISTING-ID',
             status_code=404)
@@ -113,7 +113,8 @@ class TestNeteClient:
             'updated_at': '2017-11-12T18:00:00',
         }
 
-    def test_update_note_raises_NotFound_exception(self, nete_client, server_mock):
+    def test_update_note_raises_NotFound_exception(self, nete_client,
+                                                   server_mock):
         server_mock.put('mock://server/notes/ID', status_code=404)
 
         with pytest.raises(NotFound):
@@ -132,9 +133,9 @@ class TestNeteClient:
 
         assert server_mock.called
 
-    def test_delete_raises_NotFound_exception(
-        self, nete_client, server_mock):
-        server_mock.delete('mock://server/notes/NON-EXISTENT-ID', status_code=404)
+    def test_delete_raises_NotFound_exception(self, nete_client, server_mock):
+        server_mock.delete('mock://server/notes/NON-EXISTENT-ID',
+                           status_code=404)
 
         with pytest.raises(NotFound):
             nete_client.delete_note('NON-EXISTENT-ID')

@@ -21,4 +21,3 @@ def setup_routes(app, storage):
     app.router.add_get('/notes/{note_id}', handler.get_note, name='note')
     app.router.add_put('/notes/{note_id}', handler.update_note)
     app.router.add_delete('/notes/{note_id}', handler.delete_note)
-

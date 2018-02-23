@@ -1,6 +1,5 @@
 import datetime
 import dateutil.parser
-import json
 
 
 def default_serialize(obj):

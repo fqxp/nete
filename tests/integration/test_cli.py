@@ -11,7 +11,8 @@ import tempfile
 def server():
     with tempfile.TemporaryDirectory() as tmp_dir:
         process = pexpect.spawn(
-            'nete-backend --storage filesystem --storage-base-dir {}'.format(tmp_dir),
+            'nete-backend --storage filesystem --storage-base-dir {}'
+            .format(tmp_dir),
             logfile=open('/tmp/pexpect-server.log', 'wb'))
         process.expect('.*starting server on.*')
         yield

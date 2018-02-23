@@ -19,7 +19,8 @@ class Lockable:
         self.lock_filename = lock_filename
         self.remove_stale_lockfile()
         if os.path.exists(self.lock_filename):
-            raise AlreadyLocked('lockfile {} exists'.format(self.lock_filename))
+            raise AlreadyLocked('lockfile {} exists'
+                                .format(self.lock_filename))
 
         with open(self.lock_filename, 'w') as fp:
             fp.write(str(os.getpid()))

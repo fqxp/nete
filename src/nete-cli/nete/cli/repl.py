@@ -125,12 +125,11 @@ Created-At: {created_at}
 Updated-At: {updated_at}
 
 {text}'''.format(
-    id=note.get('id', '<not set>'),
-    title=note['title'],
-    created_at=note.get('created_at', '<not set>'),
-    updated_at=note.get('updated_at', '<not set>'),
-    text=note['text']
-    )
+        id=note.get('id', '<not set>'),
+        title=note['title'],
+        created_at=note.get('created_at', '<not set>'),
+        updated_at=note.get('updated_at', '<not set>'),
+        text=note['text'])
 
 
 def parse_editable_note(formatted_note, original_note):
@@ -150,4 +149,3 @@ def parse_editable_note(formatted_note, original_note):
     return {
         key: value for key, value in attrs.items() if value is not None
     }
-

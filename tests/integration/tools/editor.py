@@ -7,7 +7,10 @@ class Editor:
         self.content_fp = tempfile.NamedTemporaryFile()
         cmd_fp = tempfile.NamedTemporaryFile(delete=False)
         self.cmd_name = cmd_fp.name
-        cmd_fp.write('#!/bin/bash\ncp {} $1'.format(self.content_fp.name, self.content_fp.name).encode('utf-8'))
+        cmd_fp.write(
+            '#!/bin/bash\ncp {} $1'
+            .format(self.content_fp.name, self.content_fp.name)
+            .encode('utf-8'))
         cmd_fp.close()
         os.chmod(self.cmd_name, 0o755)
 
@@ -23,4 +26,3 @@ class Editor:
     def cleanup(self):
         os.unlink(self.cmd_name)
         self.content_fp.close()
-

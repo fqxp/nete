@@ -1,7 +1,6 @@
 from nete.backend.storage.exceptions import NotFound
 from nete.common.schemas.note_schema import NoteSchema
 from aiohttp import web
-import json
 import uuid
 
 

@@ -38,11 +38,13 @@ class TestFilesystemStorage:
         assert len(result) == 1
         assert result[0].id == new_note.id
         assert result[0].title == new_note.title
-        assert result[0].created_at == datetime.datetime.utcnow().replace(tzinfo=pytz.UTC)
-        assert result[0].updated_at == datetime.datetime.utcnow().replace(tzinfo=pytz.UTC)
+        now = datetime.datetime.utcnow().replace(tzinfo=pytz.UTC)
+        assert result[0].created_at == now
+        assert result[0].updated_at == now
 
     @pytest.mark.asyncio
-    async def test_read_raises_NotFound_when_id_not_found(self, storage, new_note):
+    async def test_read_raises_NotFound_when_id_not_found(self, storage,
+                                                          new_note):
         with pytest.raises(NotFound):
             await storage.read('NON-EXISTING ID')
 
@@ -53,8 +55,9 @@ class TestFilesystemStorage:
 
         note = await storage.read(new_note.id)
         assert note.id is not None
-        assert note.created_at == datetime.datetime.utcnow().replace(tzinfo=pytz.UTC)
-        assert note.updated_at == datetime.datetime.utcnow().replace(tzinfo=pytz.UTC)
+        now = datetime.datetime.utcnow().replace(tzinfo=pytz.UTC)
+        assert note.created_at == now
+        assert note.updated_at == now
         assert note.title == 'TITLE'
         assert note.text == 'TEXT'
 
@@ -76,8 +79,10 @@ class TestFilesystemStorage:
         await storage.write(new_note)
 
         updated_note = await storage.read(new_note.id)
-        assert updated_note.created_at == datetime.datetime(2017, 1, 1, tzinfo=pytz.UTC)
-        assert updated_note.updated_at == datetime.datetime.utcnow().replace(tzinfo=pytz.UTC)
+        assert (updated_note.created_at ==
+                datetime.datetime(2017, 1, 1, tzinfo=pytz.UTC))
+        assert (updated_note.updated_at ==
+                datetime.datetime.utcnow().replace(tzinfo=pytz.UTC))
         assert updated_note.title == 'NEW TITLE'
         assert updated_note.text == 'NEW TEXT'
 
@@ -91,6 +96,7 @@ class TestFilesystemStorage:
             await storage.read(new_note.id)
 
     @pytest.mark.asyncio
-    async def test_delete_raises_NotFound_if_note_doesnt_exist(self, storage, new_note):
+    async def test_delete_raises_NotFound_if_note_doesnt_exist(self, storage,
+                                                               new_note):
         with pytest.raises(NotFound):
             await storage.delete('NON-EXISTING ID')
