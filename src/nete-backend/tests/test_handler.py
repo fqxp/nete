@@ -1,8 +1,7 @@
 from nete.backend.handler import Handler
 from nete.backend.storage.exceptions import NotFound
-from nete.backend.middleware import storage_exceptions_middleware
 from nete.common.models.note import Note
-from aiohttp import web
+from nete.backend.app import create_app
 import datetime
 import json
 import pytest
@@ -44,15 +43,8 @@ class TestHandler:
         return Handler(storage)
 
     @pytest.fixture
-    def client(self, loop, test_client, handler):
-        app = web.Application(
-            middlewares=[storage_exceptions_middleware]
-        )
-        app.router.add_get('/notes', handler.index)
-        app.router.add_get('/notes/{note_id}', handler.get_note, name='note')
-        app.router.add_put('/notes/{note_id}', handler.update_note)
-        app.router.add_delete('/notes/{note_id}', handler.delete_note)
-        app.router.add_post('/notes', handler.create_note)
+    def client(self, loop, test_client, handler, storage):
+        app = create_app(storage)
         return loop.run_until_complete(test_client(app))
 
     async def test_index(self, client, storage):

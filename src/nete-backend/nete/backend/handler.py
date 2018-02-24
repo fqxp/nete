@@ -7,6 +7,7 @@ import uuid
 class Handler:
     def __init__(self, storage):
         self.storage = storage
+        self.note_schema = NoteSchema()
 
     async def index(self, request):
         """
@@ -23,7 +24,7 @@ class Handler:
         return web.Response(
             status=200,
             content_type='application/json',
-            body=NoteSchema(many=True).dumps(notes))
+            body=self.note_schema.dumps(notes, many=True))
 
     async def get_note(self, request):
         """
@@ -46,7 +47,7 @@ class Handler:
             return web.Response(
                 status=200,
                 content_type='application/json',
-                body=NoteSchema().dumps(note))
+                body=self.note_schema.dumps(note))
         except NotFound:
             return web.HTTPNotFound()
 
@@ -66,15 +67,14 @@ class Handler:
               "application/json":
                 "$ref": "#/components/schemas/Note"
         """
-        note_schema = NoteSchema()
-        note = note_schema.loads(await request.text())
+        note = self.note_schema.loads(await request.text())
         await self.storage.write(note)
         note_url = request.app.router['note'].url_for(note_id=str(note.id))
         return web.Response(
             status=201,
             content_type='application/json',
             headers={'Location': str(note_url)},
-            body=note_schema.dumps(note))
+            body=self.note_schema.dumps(note))
 
     async def update_note(self, request):
         """
@@ -85,8 +85,7 @@ class Handler:
             description: Successful operation.
         """
         note_id = request.match_info['note_id']
-        note_schema = NoteSchema()
-        note = note_schema.loads(await request.text())
+        note = self.note_schema.loads(await request.text())
         if note.id != uuid.UUID(note_id):
             return web.HTTPUnprocessableEntity()
         # check whether item already exists
