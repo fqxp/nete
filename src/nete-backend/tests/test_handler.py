@@ -89,6 +89,21 @@ class TestHandler:
             'updated_at': now,
         }
 
+    async def test_create_note_returns_422_if_data_is_invalid(self, client,
+                                                              storage):
+        response = await client.post(
+            '/notes',
+            json={
+                'id': str(uuid.uuid4()),
+                'title': 'TITLE',
+            })
+        assert response.status == 422
+
+    async def test_create_note_returns_400_if_data_is_not_json(self, client,
+                                                               storage):
+        response = await client.post('/notes', data=b'{]')
+        assert response.status == 400
+
     @pytest.mark.freeze_time
     async def test_update_note(self, client, storage):
         id = uuid.uuid4()
@@ -111,6 +126,23 @@ class TestHandler:
         }
         assert response.status == 204
         assert await response.text() == ''
+
+    async def test_update_note_returns_422_if_data_is_invalid(self, client,
+                                                              storage):
+        response = await client.put(
+            '/notes/f68c7f97-611a-49de-b9cd-c1fc63300086',
+            json={
+                'id': 'f68c7f97-611a-49de-b9cd-c1fc63300086',
+                'title': 'TITLE',
+            })
+        assert response.status == 422
+
+    async def test_update_note_returns_400_if_data_is_not_json(self, client,
+                                                               storage):
+        response = await client.put(
+            '/notes/f68c7f97-611a-49de-b9cd-c1fc63300086',
+            data=b'{]')
+        assert response.status == 400
 
     async def test_update_note_returns_404(self, client, storage):
         storage.read.side_effect = NotFound()

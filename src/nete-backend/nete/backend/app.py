@@ -1,6 +1,7 @@
 from aiohttp import web
 from .handler import Handler
-from .middleware import add_server_header, storage_exceptions_middleware
+from .middleware import (add_server_header, storage_exceptions_middleware,
+                         error_middleware)
 
 
 def create_app(storage):
@@ -8,6 +9,7 @@ def create_app(storage):
         middlewares=[
             add_server_header,
             storage_exceptions_middleware,
+            error_middleware,
         ])
     setup_routes(app, storage)
 
