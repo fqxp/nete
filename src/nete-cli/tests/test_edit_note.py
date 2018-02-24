@@ -1,20 +1,22 @@
 from nete.cli.edit_note import (
     edit_note, ParseError, render_editable_note, parse_editable_note)
 from nete.cli.test_utils.editor import Editor
+from nete.common.models import Note
 import datetime
 import os
 import pytest
+import uuid
 
 
 @pytest.fixture
 def note():
-    return {
-        'id': 'abc',
-        'title': 'TITLE',
-        'text': 'TEXT',
-        'created_at': datetime.datetime(2017, 1, 1, 12, 30, 45),
-        'updated_at': datetime.datetime(2017, 1, 2, 12, 30, 45),
-    }
+    return Note(
+        id=uuid.UUID('80463678-3882-458e-a12c-eb78059f3a52'),
+        title='TITLE',
+        text='TEXT',
+        created_at=datetime.datetime(2017, 1, 1, 12, 30, 45),
+        updated_at=datetime.datetime(2017, 1, 2, 12, 30, 45),
+    )
 
 
 @pytest.fixture
@@ -34,13 +36,13 @@ def test_edit_note_returns_parsed_note(note, editor):
 
     result = edit_note(note)
 
-    assert result == {
-        'id': 'abc',
-        'created_at': datetime.datetime(2017, 1, 1, 12, 30, 45),
-        'updated_at': datetime.datetime(2017, 1, 2, 12, 30, 45),
-        'title': 'NEW TITLE',
-        'text': 'NEW TEXT',
-    }
+    assert result == Note(
+        id=uuid.UUID('80463678-3882-458e-a12c-eb78059f3a52'),
+        title='NEW TITLE',
+        text='NEW TEXT',
+        created_at=datetime.datetime(2017, 1, 1, 12, 30, 45),
+        updated_at=datetime.datetime(2017, 1, 2, 12, 30, 45),
+    )
 
 
 def test_parse_editable_note_returns_parsed_note():
@@ -86,7 +88,7 @@ def test_render_editable_note_renders_note_as_rfc_822_style_text(note):
 
     assert result == (
         'Title: TITLE\n'
-        'Id: abc\n'
+        'Id: 80463678-3882-458e-a12c-eb78059f3a52\n'
         'Created-At: 2017-01-01 12:30:45\n'
         'Updated-At: 2017-01-02 12:30:45\n'
         '\n'
@@ -99,7 +101,7 @@ def test_render_editable_note_includes_comments_in_editor_text(note):
 
     assert result == (
         'Title: TITLE\n'
-        'Id: abc\n'
+        'Id: 80463678-3882-458e-a12c-eb78059f3a52\n'
         'Created-At: 2017-01-01 12:30:45\n'
         'Updated-At: 2017-01-02 12:30:45\n'
         '# comment 1\n'

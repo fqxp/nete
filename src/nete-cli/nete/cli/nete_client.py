@@ -1,5 +1,4 @@
-from .json_util import default_serialize, note_object_hook
-import json
+from nete.common.schemas.note_schema import NoteSchema
 import requests
 
 
@@ -17,25 +16,27 @@ class NeteClient:
     def __init__(self, base_url):
         self.base_url = base_url.rstrip('/')
         self.session = requests.Session()
+        self.note_schema = NoteSchema()
 
     def list(self):
         response = self._get('/notes')
-        return response.json(object_hook=note_object_hook)
+        return self.note_schema.loads(response.text, many=True)
 
     def get_note(self, note_id):
         response = self._get('/notes/{}', note_id)
-        return response.json(object_hook=note_object_hook)
+        return self.note_schema.loads(response.text)
 
     def create_note(self, note):
-        return self._post(
+        note_schema = NoteSchema(exclude=('id', 'created_at', 'updated_at'))
+        response = self._post(
             '/notes',
-            data=json.dumps(note, default=default_serialize)
-            ).json(object_hook=note_object_hook)
+            data=note_schema.dumps(note))
+        return self.note_schema.loads(response.text)
 
     def update_note(self, note):
         self._put(
-            '/notes/{}'.format(note['id']),
-            data=json.dumps(note, default=default_serialize))
+            '/notes/{}'.format(note.id),
+            data=self.note_schema.dumps(note))
 
     def delete_note(self, note_id):
         self._delete('/notes/{}', note_id)

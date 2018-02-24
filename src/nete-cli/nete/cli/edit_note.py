@@ -1,3 +1,4 @@
+from nete.common.models import Note
 import os
 import subprocess
 import tempfile
@@ -34,21 +35,20 @@ def edit_note(note, message=None):
 
         fp.seek(0)
         data = fp.read().decode('utf-8')
-        note.update(parse_editable_note(data))
-        return note
+        return Note(**{**note.__dict__, **parse_editable_note(data)})
 
 
 def render_editable_note(note, message=None):
     headers = ''.join(
         "{}: {}\n".format(
             mapping['header'],
-            note.get(mapping['attr'], mapping.get('default')))
+            note.__dict__.get(mapping['attr'], mapping.get('default')))
         for mapping in HEADER_MAPPINGS)
     messages = (''.join('# {}\n'.format(line)
                         for line in message.split('\n'))
                 if message else '')
 
-    return '{}{}\n{}'.format(headers, messages, note['text'])
+    return '{}{}\n{}'.format(headers, messages, note.text)
 
 
 def parse_editable_note(formatted_note):
