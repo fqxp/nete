@@ -1,5 +1,7 @@
 from nete.common.schemas.note_schema import NoteSchema
 import requests
+import requests_unixsocket
+import urllib.parse
 
 
 class NotFound(Exception):
@@ -14,9 +16,22 @@ class ServerError(Exception):
 class NeteClient:
 
     def __init__(self, base_url):
-        self.base_url = base_url.rstrip('/')
-        self.session = requests.Session()
+        self.base_url = self._prepare_base_url(base_url)
+        self.session = self._build_session(self.base_url)
         self.note_schema = NoteSchema()
+
+    def _prepare_base_url(self, base_url):
+        base_url = base_url.rstrip('/')
+        if base_url.startswith('/'):
+            base_url = 'http+unix://{}'.format(
+                urllib.parse.quote(base_url, safe=''))
+        return base_url
+
+    def _build_session(self, base_url):
+        if base_url.startswith('http+unix:'):
+            return requests_unixsocket.Session()
+        else:
+            return requests.Session()
 
     def list(self):
         response = self._get('/notes')

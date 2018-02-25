@@ -10,7 +10,6 @@ class Config:
 
     defaults = {
         'debug': False,
-        'api.type': 'tcp',
         'api.host': 'localhost',
         'api.port': 8080,
         'api.socket': None,
@@ -20,8 +19,16 @@ class Config:
 
     def __init__(self, args):
         self.args = self.parse_args(args)
+        xdg_config_filename = os.path.join(
+            os.environ.get(
+                'XDG_CONFIG_HOME',
+                os.path.expanduser('~/.config')),
+            'nete/backend.rc')
+
         if self.args.config:
             self.file_config = self.read_file(self.args.config)
+        elif os.path.exists(xdg_config_filename):
+            self.file_config = self.read_file(xdg_config_filename)
         elif os.path.exists('/etc/nete/backend.rc'):
             self.file_config = self.read_file('/etc/nete/backend.rc')
         else:
@@ -31,7 +38,6 @@ class Config:
         parser = argparse.ArgumentParser()
         parser.add_argument('-c', '--config', default=None)
         parser.add_argument('-D', '--debug', action='store_true')
-        parser.add_argument('-A', '--api', dest='api.type')
         parser.add_argument('-H', '--api-host', dest='api.host')
         parser.add_argument('-P', '--api-port', type=int, dest='api.port')
         parser.add_argument('-S', '--api-socket', dest='api.socket')

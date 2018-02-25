@@ -11,3 +11,4 @@ venv/
 pexpect*.log
 .pexpect*.log
 nete.rc
+backend.rc

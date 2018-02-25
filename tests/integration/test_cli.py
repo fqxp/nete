@@ -1,6 +1,7 @@
 from tools.spawn import spawn
 from nete.cli.test_utils.editor import Editor
 import os
+import os.path
 import pexpect
 import pytest
 import subprocess
@@ -8,11 +9,20 @@ import tempfile
 
 
 @pytest.fixture
-def server():
+def socket():
+    with tempfile.TemporaryDirectory() as sock_tmp_dir:
+        yield os.path.join(sock_tmp_dir, 'nete.sock')
+
+
+@pytest.fixture
+def server(socket):
     with tempfile.TemporaryDirectory() as tmp_dir:
         process = pexpect.spawn(
-            'nete-backend --storage filesystem --storage-base-dir {}'
-            .format(tmp_dir),
+            'nete-backend '
+            '--storage filesystem '
+            '--storage-base-dir {storage_base_dir} '
+            '--api-socket {socket}'
+            .format(storage_base_dir=tmp_dir, socket=socket),
             logfile=open('/tmp/pexpect-server.log', 'wb'))
         process.expect('.*starting server on.*')
         yield
@@ -32,11 +42,11 @@ def editor():
 
 
 @pytest.fixture
-def client(editor):
+def client(editor, socket):
     env = os.environ.copy()
     env.update(editor.env())
     return spawn(
-        'nete',
+        'nete --base-url {}'.format(socket),
         env=env,
         timeout=2)
 
