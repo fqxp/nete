@@ -35,7 +35,9 @@ class Config:
             'nete',
             self.rc_filename)
 
-        if self.args.config:
+        if self.args.no_rc:
+            return {}
+        elif self.args.config:
             return self._read_file(self.args.config)
         elif os.path.exists(xdg_config_filename):
             return self._read_file(xdg_config_filename)

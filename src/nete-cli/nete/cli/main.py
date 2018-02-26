@@ -8,6 +8,7 @@ import sys
 def build_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--config', default=None)
+    parser.add_argument('--no-rc', action='store_true', default=False)
     parser.add_argument('-D', '--debug', action='store_true')
     parser.add_argument('-b', '--backend-url', dest='backend.url')
     return parser

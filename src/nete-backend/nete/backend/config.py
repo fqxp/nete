@@ -7,6 +7,7 @@ import os.path
 def build_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('-c', '--config', default=None)
+    parser.add_argument('--no-rc', action='store_true', default=False)
     parser.add_argument('-D', '--debug', action='store_true')
     parser.add_argument('-H', '--api-host', dest='api.host')
     parser.add_argument('-P', '--api-port', type=int, dest='api.port')

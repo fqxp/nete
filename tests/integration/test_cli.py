@@ -19,6 +19,7 @@ def server(socket):
     with tempfile.TemporaryDirectory() as tmp_dir:
         process = pexpect.spawn(
             'nete-backend '
+            '--no-rc '
             '--storage filesystem '
             '--storage-base-dir {storage_base_dir} '
             '--api-socket {socket}'
@@ -46,7 +47,7 @@ def client(editor, socket):
     env = os.environ.copy()
     env.update(editor.env())
     return spawn(
-        'nete --backend-url local:{}'.format(socket),
+        'nete --no-rc --backend-url local:{}'.format(socket),
         env=env,
         timeout=2)
 
