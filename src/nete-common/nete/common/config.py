@@ -49,7 +49,8 @@ class Config:
         config_parser = configparser.ConfigParser()
         config_parser.read(filename)
         return {
-            '{}.{}'.format(section, key): config_parser[section][key]
+            '{}.{}'.format(section, key): os.path.expandvars(
+                config_parser[section][key])
             for section in config_parser.sections()
             for key in config_parser[section]
         }
