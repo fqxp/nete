@@ -8,7 +8,14 @@ sdist/
 .eggs/
 .pytest_cache/
 venv/
-pexpect*.log
-.pexpect*.log
+
+# sphinx
+_build/
+
+# nete
 nete.rc
 backend.rc
+
+# nete tests
+pexpect*.log
+.pexpect*.log
