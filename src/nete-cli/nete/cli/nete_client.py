@@ -15,20 +15,23 @@ class ServerError(Exception):
 
 class NeteClient:
 
-    def __init__(self, base_url):
-        self.base_url = self._prepare_base_url(base_url)
-        self.session = self._build_session(self.base_url)
+    def __init__(self, backend_url):
+        self.base_url = self._prepare_base_url(backend_url)
+        self.session = self._build_session()
         self.note_schema = NoteSchema()
 
-    def _prepare_base_url(self, base_url):
-        base_url = base_url.rstrip('/')
-        if base_url.startswith('/'):
-            base_url = 'http+unix://{}'.format(
-                urllib.parse.quote(base_url, safe=''))
-        return base_url
+    def _prepare_base_url(self, backend_url):
+        parsed_url = urllib.parse.urlparse(backend_url)
 
-    def _build_session(self, base_url):
-        if base_url.startswith('http+unix:'):
+        if parsed_url.scheme == 'local':
+            # requests expects a quoted path like http+unix://%2Ftmp%2Fsocket
+            quoted_path = urllib.parse.quote(parsed_url.path, safe='')
+            return 'http+unix://{}'.format(quoted_path)
+        else:
+            return backend_url
+
+    def _build_session(self):
+        if self.base_url.startswith('http+unix:'):
             return requests_unixsocket.Session()
         else:
             return requests.Session()

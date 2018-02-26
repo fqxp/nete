@@ -1,21 +1,32 @@
+from nete.common.config import Config
 from .nete_client import NeteClient
 from .repl import Repl
 import argparse
 import sys
 
 
-def main():
-    config = parse_args(sys.argv)
+def build_parser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-c', '--config', default=None)
+    parser.add_argument('-D', '--debug', action='store_true')
+    parser.add_argument('-b', '--backend-url', dest='backend.url')
+    return parser
 
-    nete_client = NeteClient(config.base_url)
+
+defaults = {
+    'debug': False,
+    'api.url': 'http://localhost:8080',
+}
+
+config = Config('cli.rc', build_parser(), defaults)
+
+
+def main():
+    config.parse_args(sys.argv[1:])
+
+    nete_client = NeteClient(config['backend.url'])
     repl = Repl(nete_client)
     try:
         repl.cmdloop()
     except KeyboardInterrupt:
         pass
-
-
-def parse_args(args):
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-u', '--base-url', default=None, dest='base_url')
-    return parser.parse_args()

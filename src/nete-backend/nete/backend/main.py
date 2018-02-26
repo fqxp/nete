@@ -1,5 +1,5 @@
 from .app import create_app
-from .config import Config
+from .config import config
 from .storage.filesystem import FilesystemStorage
 from aiohttp import web
 import logging
@@ -24,7 +24,7 @@ def build_storage(config):
 
 def main():
     logging.basicConfig(level=logging.INFO)
-    config = Config(sys.argv)
+    config.parse_args(sys.argv[1:])
 
     log_level = logging.DEBUG if config['debug'] else logging.INFO
     logging.getLogger().setLevel(log_level)

@@ -46,7 +46,7 @@ def client(editor, socket):
     env = os.environ.copy()
     env.update(editor.env())
     return spawn(
-        'nete --base-url {}'.format(socket),
+        'nete --backend-url local:{}'.format(socket),
         env=env,
         timeout=2)
 

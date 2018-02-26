@@ -16,6 +16,7 @@ class FilesystemStorage(Lockable):
 
     def __init__(self, base_dir):
         self.base_dir = Path(base_dir)
+        os.makedirs(self.base_dir, exist_ok=True)
         self.executor = ThreadPoolExecutor()
 
     def open(self):
