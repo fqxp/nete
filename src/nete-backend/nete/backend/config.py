@@ -2,6 +2,9 @@ from nete.common.config import Config
 from nete.common.xdg import XDG_DATA_HOME
 import argparse
 import os.path
+import pkg_resources
+
+__version__ = pkg_resources.get_distribution('nete-cli').version
 
 
 def build_parser():
@@ -14,6 +17,8 @@ def build_parser():
     parser.add_argument('-S', '--api-socket', dest='api.socket')
     parser.add_argument('-s', '--storage', dest='storage.type')
     parser.add_argument('--storage-base-dir', dest='storage.base_dir')
+    parser.add_argument('-V', '--version', action='version',
+                        version=__version__)
     return parser
 
 

@@ -3,6 +3,9 @@ from .nete_client import NeteClient
 from .repl import Repl
 import argparse
 import sys
+import pkg_resources
+
+__version__ = pkg_resources.get_distribution('nete-cli').version
 
 
 def build_parser():
@@ -11,6 +14,8 @@ def build_parser():
     parser.add_argument('--no-rc', action='store_true', default=False)
     parser.add_argument('-D', '--debug', action='store_true')
     parser.add_argument('-b', '--backend-url', dest='backend.url')
+    parser.add_argument('-V', '--version', action='version',
+                        version=__version__)
     return parser
 
 

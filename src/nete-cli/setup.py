@@ -1,10 +1,16 @@
 #! /usr/bin/env python3
 from setuptools import setup
+import os.path
+import runpy
+
+here = os.path.abspath(os.path.dirname(__file__))
+
+__version__ = runpy.run_module('nete.cli.__version__')['__version__']
 
 
 setup(
     name='nete-cli',
-    version='0.1',
+    version=__version__,   # noqa F821
     description='A note-taking toolset (command-line interface)',
     author='Frank Ploss',
     author_email='nete@fqxp.de',
