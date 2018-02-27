@@ -20,6 +20,7 @@ class FilesystemStorage(Lockable):
         self.executor = ThreadPoolExecutor()
 
     def open(self):
+        logger.info('Opening storage in directory {}'.format(self.base_dir))
         self.lock(self.base_dir / '.lock')
 
     def close(self):
@@ -41,6 +42,7 @@ class FilesystemStorage(Lockable):
     @Lockable.ensure_lock
     async def write(self, note):
         filename = self._filename(str(note.id))
+        logger.debug('Opening file {} for writing'.format(filename))
         note_schema = NoteSchema()
         with open(filename, 'w') as fp:
             fp.write(note_schema.dumps(note))
@@ -55,7 +57,7 @@ class FilesystemStorage(Lockable):
         await loop.run_in_executor(self.executor, os.unlink, filename)
 
     async def _read_file(self, filename):
-        logger.debug('opening file {} for reading'.format(filename))
+        logger.debug('Opening file {} for reading'.format(filename))
         note_schema = NoteSchema()
         try:
             note_data = open(filename).read()

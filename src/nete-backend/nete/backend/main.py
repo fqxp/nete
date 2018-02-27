@@ -39,11 +39,11 @@ def main():
 
     try:
         if config['api.socket']:
-            logger.info('starting server on socket {}'
+            logger.info('Starting server on socket {}'
                         .format(config['api.socket']))
             web.run_app(app, path=config['api.socket'])
         else:
-            logger.info('starting server on tcp://{}:{}'.format(
+            logger.info('Starting server on tcp://{}:{}'.format(
                 config['api.host'], config['api.port']))
             web.run_app(app, host=config['api.host'], port=config['api.port'])
     finally:

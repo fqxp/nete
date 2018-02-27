@@ -24,8 +24,9 @@ def server(socket):
             '--storage-base-dir {storage_base_dir} '
             '--api-socket {socket}'
             .format(storage_base_dir=tmp_dir, socket=socket),
-            logfile=open('/tmp/pexpect-server.log', 'wb'))
-        process.expect('.*starting server on.*')
+            logfile=open('/tmp/pexpect-server.log', 'wb'),
+            timeout=2)
+        process.expect('.*Starting server on.*')
         yield
 
         process.terminate()
