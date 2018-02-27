@@ -11,8 +11,7 @@ setup(
     license='GPLv3',
     url='https://github.com/fqxp/nete-backend',
     install_requires=[
-        'marshmallow',
-        'python-dateutil',
+        'marshmallow>=3.0.0b7',
     ],
     setup_requires=[
         'pytest-runner',
