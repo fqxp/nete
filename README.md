@@ -1,16 +1,32 @@
-_pre-alpha_
+_pre-alpha software_
 
 [![Build Status](https://travis-ci.org/fqxp/nete-backend.svg?branch=master)](https://travis-ci.org/fqxp/nete-backend)
 
-## Installation
+# Installation
 
-Run:
+First, build the source distribution packages:
 
-    $ pip install -r requirements.txt
-    $ ./setup.py install
+    $ ( cd src/nete-common ; ./setup.py sdist )
+    $ ( cd src/nete-backend ; ./setup.py sdist )
+    $ ( cd src/nete-cli ; ./setup.py sdist)
+
+If everything went well, you can install the packages now using pip:
+
+    $ pip install \
+      src/nete-common/dist/nete-common-VERSION.tar.gz \
+      src/nete-backend/dist/nete-backend-VERSION.tar.gz \
+      src/nete-cli/dist/nete-cli-VERSION.tar.gz \
 
 # Development setup
 
-Run:
-    $ pip install -r requirements-dev.txt
-    $ ./setup.py develop
+First, create a virtual environment and activate it:
+
+    $ virtualenv venv
+    $ venv/bin/activate
+
+Then, run the `setup-development.sh` script, which will install the development
+dependencies and the nete packages in development mode.
+
+## Tests
+
+Simply run `pytest`.
