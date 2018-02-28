@@ -21,7 +21,7 @@ HEADER_MAPPINGS = (
 
 
 def edit_note(note, message=None):
-    with tempfile.NamedTemporaryFile(prefix='nete') as fp:
+    with tempfile.NamedTemporaryFile(suffix='.nete') as fp:
         fp.write(render_editable_note(note, message).encode('utf-8'))
         fp.flush()
         result = subprocess.run(
