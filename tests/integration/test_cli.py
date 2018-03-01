@@ -25,7 +25,7 @@ def server(socket):
             '--api-socket {socket}'
             .format(storage_base_dir=tmp_dir, socket=socket),
             logfile=open('/tmp/pexpect-server.log', 'wb'),
-            timeout=2)
+            timeout=5)
         process.expect('.*Starting server on.*')
         yield
 
