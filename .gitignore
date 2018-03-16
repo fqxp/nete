@@ -13,7 +13,7 @@ venv/
 _build/
 
 # nete
-nete.rc
+cli.rc
 backend.rc
 
 # nete tests
