@@ -102,3 +102,7 @@ class NeteClient:
         return '{base_url}/{path}'.format(
             base_url=self.base_url,
             path=path)
+
+    def __repr__(self):
+        return '<NeteClient base_url={}>'.format(
+            self.base_url)

@@ -8,14 +8,13 @@ logger = logging.getLogger(__name__)
 
 class Config:
 
-    def __init__(self, rc_filename, parser, defaults):
-        self.rc_filename = rc_filename
-        self.parser = parser
+    def __init__(self, filename, defaults):
         self.defaults = defaults
-
-    def parse_args(self, command_line_args):
-        self.args = self.parser.parse_args(command_line_args)
-        self.file_config = self._load_config()
+        filename = os.environ.get(
+            'NETE_CONFIG_FILE',
+            os.path.join(XDG_CONFIG_HOME, 'nete', filename)
+            )
+        self.file_config = self._load_config(filename)
 
     def attributes(self, section):
         return {
@@ -25,26 +24,10 @@ class Config:
         }
 
     def __getitem__(self, name):
-        return (self.args.__dict__.get(name)
-                or self.file_config.get(name)
+        return (self.file_config.get(name)
                 or self.defaults.get(name))
 
-    def _load_config(self):
-        xdg_config_filename = os.path.join(
-            XDG_CONFIG_HOME,
-            'nete',
-            self.rc_filename)
-
-        if self.args.no_rc:
-            return {}
-        elif self.args.config:
-            return self._read_file(self.args.config)
-        elif os.path.exists(xdg_config_filename):
-            return self._read_file(xdg_config_filename)
-        else:
-            return {}
-
-    def _read_file(self, filename):
+    def _load_config(self, filename):
         logger.info('Reading config from file {}'.format(filename))
         config_parser = configparser.ConfigParser()
         config_parser.read(filename)
