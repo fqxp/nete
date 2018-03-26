@@ -24,12 +24,12 @@ class Repl(cmd.Cmd):
 
     def do_cat(self, line):
         '''cat NOTE-ID [NOTE-ID…]   print note(s)'''
-        note_ids = self._parse(line)
+        note_ids = line.split()
         self.shell.cat(note_ids)
 
     def do_edit(self, line):
         '''edit NAME    edit note NAME'''
-        note_id = self._parse(line)[0]
+        note_id = line.split()[0]
         self.shell.edit(note_id)
 
     def do_new(self, line):
@@ -39,7 +39,7 @@ class Repl(cmd.Cmd):
 
     def do_rm(self, line):
         '''rm NAME    remove note NAME'''
-        note_ids = self._parse(line)
+        note_ids = line.split()
         self.shell.rm(note_ids)
 
     def do_exit(self, line):
@@ -52,15 +52,8 @@ class Repl(cmd.Cmd):
     def emptyline(self):
         pass
 
-    def _parse(self, line):
-        return line.split()
-
     def _complete_note_id_or_title(self, text, line, begidx, endidx):
-        notes = self.nete_client.list()
-        return (
-            [str(note.id)
-             for note in notes
-             if text == '' or str(note.id).startswith(text)])
+        return self.shell.complete_note_id_or_title(text)
 
     complete_cat = _complete_note_id_or_title
     complete_edit = _complete_note_id_or_title

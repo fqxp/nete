@@ -17,6 +17,12 @@ If everything went well, you can install the packages now using pip:
       src/nete-backend/dist/nete-backend-VERSION.tar.gz \
       src/nete-cli/dist/nete-cli-VERSION.tar.gz \
 
+## Install zsh completion
+
+Copy the file `etc/_nete.zsh` to the directory `~/.config/zsh/completion`, and
+in a new shell, you should be able to use command line completion.
+
+
 # Development setup
 
 First, create a virtual environment and activate it:

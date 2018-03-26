@@ -15,6 +15,16 @@ def socket():
 
 
 @pytest.fixture
+def cli_config(socket):
+    with tempfile.NamedTemporaryFile() as config_file:
+        config_file.write('[backend]\nurl = local:{}'
+                          .format(socket)
+                          .encode('utf-8'))
+        config_file.flush()
+        yield config_file.name
+
+
+@pytest.fixture
 def server(socket):
     with tempfile.TemporaryDirectory() as tmp_dir:
         process = pexpect.spawn(
@@ -44,44 +54,54 @@ def editor():
 
 
 @pytest.fixture
-def client(editor, socket):
-    env = os.environ.copy()
-    env.update(editor.env())
-    return spawn(
-        'nete --no-rc --backend-url local:{}'.format(socket),
-        env=env,
-        timeout=2)
+def run_nete(server, editor, socket, cli_config):
+    def run_nete(*args):
+        env = os.environ.copy()
+        env.update(editor.env())
+        env['NETE_CONFIG_FILE'] = cli_config
+        return spawn(
+            'nete',
+            list(args),
+            env=env,
+            timeout=2)
+    return run_nete
 
 
-def test_cli(server, client, editor):
-    # ls
-    client.assertExpect(r'nete .*> ')
-    client.sendline('ls')
+def test_new_and_ls(server, run_nete, editor):
+    editor.set_content('Title: NEW NOTE\n\nFOO')
+    proc = run_nete('new', 'NEW NOTE')
+    proc.assertExpect('Created note with id (.*)')
+    note_id = proc.match[1].split()[0].decode('utf-8')
+    proc.assertExpect(pexpect.EOF)
 
-    # new
-    client.assertExpect(r'nete .*> ')
-    editor.set_content('Title: abc\n\nFOO')
-    client.sendline('new')
-    client.assertExpect('Enter title.*: ')
-    client.sendline('abc')
-    client.assertExpect('Created note with id (.*)')
-    note_id = client.match[1].split()[0]
+    proc = run_nete('ls')
+    proc.assertExpect('{}   NEW NOTE'.format(note_id))
+    proc.assertExpect(pexpect.EOF)
 
-    # cat
-    client.assertExpect(r'nete .*> ')
-    client.sendline('cat {}'.format(note_id.decode('utf-8')))
-    client.assertExpect('.*FOO')
 
-    # edit
-    client.assertExpect(r'nete .*> ')
-    editor.set_content('Title: abc\n\nBAR')
-    client.sendline('edit {}'.format(note_id.decode('utf-8')))
+def test_new_and_cat(server, run_nete, editor):
+    editor.set_content('Title: NEW NOTE\n\nFOO')
+    proc = run_nete('new', 'NEW NOTE')
+    proc.assertExpect('Created note with id (.*)')
+    note_id = proc.match[1].split()[0].decode('utf-8')
+    proc.assertExpect(pexpect.EOF)
 
-    client.assertExpect(r'nete .*> ')
-    client.sendline('cat {}'.format(note_id.decode('utf-8')))
-    client.assertExpect('.*BAR')
+    proc = run_nete('cat', note_id)
+    proc.assertExpect('.*FOO')
+    proc.assertExpect(pexpect.EOF)
 
-    # exit
-    client.assertExpect(r'nete .*> ')
-    client.sendline('exit')
-    client.assertExpect(pexpect.EOF)
+
+def test_edit(server, run_nete, editor):
+    editor.set_content('Title: NEW NOTE\n\nFOO')
+    proc = run_nete('new', 'NEW NOTE')
+    proc.assertExpect('Created note with id (.*)')
+    note_id = proc.match[1].split()[0].decode('utf-8')
+    proc.assertExpect(pexpect.EOF)
+
+    editor.set_content('Title: NEW NOTE\n\nBAR')
+    proc = run_nete('edit', note_id)
+    proc.assertExpect(pexpect.EOF)
+
+    proc = run_nete('cat', note_id)
+    proc.assertExpect('.*BAR')
+    proc.assertExpect(pexpect.EOF)

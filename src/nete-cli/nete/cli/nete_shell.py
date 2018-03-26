@@ -48,3 +48,10 @@ class NeteShell:
                 self.nete_client.delete_note(uuid.UUID(note_id))
             except NotFound:
                 print('Cannot remove {}, not found.'.format(note_id))
+
+    def complete_note_id_or_title(self, text):
+        notes = self.nete_client.list()
+        return (
+            [str(note.id)
+             for note in notes
+             if text == '' or str(note.id).startswith(text)])
