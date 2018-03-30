@@ -17,7 +17,7 @@ setup(
     license='GPLv3',
     url='https://github.com/fqxp/nete-backend',
     install_requires=[
-        'aiohttp>=2.3',
+        'aiohttp>=3.1',
         'marshmallow>=3.0.0b7',
         'python-dateutil>=2.6',
         'nete-common',
