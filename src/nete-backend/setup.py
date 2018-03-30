@@ -19,7 +19,6 @@ setup(
     install_requires=[
         'aiohttp>=3.1',
         'marshmallow>=3.0.0b7',
-        'python-dateutil>=2.6',
         'nete-common',
     ],
     setup_requires=[
