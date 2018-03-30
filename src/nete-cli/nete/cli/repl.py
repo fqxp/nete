@@ -52,9 +52,9 @@ class Repl(cmd.Cmd):
     def emptyline(self):
         pass
 
-    def _complete_note_id_or_title(self, text, line, begidx, endidx):
-        return self.shell.complete_note_id_or_title(text)
+    def _complete_note_id(self, text, line, begidx, endidx):
+        return self.shell.complete_note_id(text)
 
-    complete_cat = _complete_note_id_or_title
-    complete_edit = _complete_note_id_or_title
-    complete_rm = _complete_note_id_or_title
+    complete_cat = _complete_note_id
+    complete_edit = _complete_note_id
+    complete_rm = _complete_note_id

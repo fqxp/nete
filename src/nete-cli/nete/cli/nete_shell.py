@@ -49,7 +49,7 @@ class NeteShell:
             except NotFound:
                 print('Cannot remove {}, not found.'.format(note_id))
 
-    def complete_note_id_or_title(self, text):
+    def complete_note_id(self, text):
         notes = self.nete_client.list()
         return (
             [str(note.id)
