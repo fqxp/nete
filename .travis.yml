@@ -8,4 +8,8 @@ install:
     - pip install src/nete-common
     - pip install src/nete-backend
     - pip install src/nete-cli
-script: .travis/run-tests.sh
+    - pip install pytest-cov
+script:
+    - .travis/run-tests.sh
+after_success:
+    - bash <(curl -s https://codecov.io/bash)
