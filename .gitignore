@@ -12,6 +12,10 @@ venv/
 # sphinx
 _build/
 
+# coverage
+.coverage
+coverage.xml
+
 # nete
 cli.rc
 backend.rc

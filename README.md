@@ -1,6 +1,7 @@
 _beta software_
 
 [![Build Status](https://travis-ci.org/fqxp/nete.svg?branch=master)](https://travis-ci.org/fqxp/nete)
+[![codecov](https://codecov.io/gh/fqxp/nete/branch/master/graph/badge.svg)](https://codecov.io/gh/fqxp/nete)
 [![Maintainability](https://api.codeclimate.com/v1/badges/250379bc91e125e71dcc/maintainability)](https://codeclimate.com/github/fqxp/nete/maintainability)
 
 # Installation

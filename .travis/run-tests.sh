@@ -1,12 +1,9 @@
-#! /bin/bash
+#! /bin/bash -x
 
-echo '===== RUNNING TESTS ====='
-
-pytest
+pytest --cov nete
 EXIT_CODE=$?
 
 echo '===== pexpect-server.log ====='
 cat /tmp/pexpect-server.log
-echo
 
 exit $EXIT_CODE
