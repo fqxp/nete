@@ -13,41 +13,49 @@ class NeteShell:
             key: getattr(args, key)
             for key in args.options
         }
-        getattr(self, '{}'.format(args.cmd))(**cmd_kwargs)
+        return getattr(self, '{}'.format(args.cmd))(**cmd_kwargs)
 
     def cat(self, note_ids):
         for note_id in note_ids:
             try:
                 note = self.nete_client.get_note(uuid.UUID(note_id))
                 print(render_editable_note(note))
+                return 0
             except NotFound:
                 print('{} not found.'.format(note_id))
+                return 1
 
     def edit(self, note_id):
         try:
             note = self.nete_client.get_note(uuid.UUID(note_id))
             changed_note = edit_note(note)
             self.nete_client.update_note(changed_note)
+            return 0
         except NotFound:
             print('Cannot edit {}, not found.'.format(note_id))
+            return 1
 
     def ls(self):
         notes = self.nete_client.list()
         for note in notes:
             print('{id}   {title}'.format(**note.__dict__))
+        return 0
 
     def new(self, title):
         note = Note(title=title, text='')
         changed_note = edit_note(note)
         note = self.nete_client.create_note(changed_note)
         print('Created note with id {}'.format(note.id))
+        return 0
 
     def rm(self, note_ids):
         for note_id in note_ids:
             try:
                 self.nete_client.delete_note(uuid.UUID(note_id))
+                return 0
             except NotFound:
                 print('Cannot remove {}, not found.'.format(note_id))
+                return 1
 
     def complete_note_id(self, text):
         notes = self.nete_client.list()

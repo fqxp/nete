@@ -3,6 +3,7 @@ from .parse_args import parse_args
 from .nete_client import NeteClient
 from .nete_shell import NeteShell
 from .repl import Repl
+import sys
 
 
 defaults = {
@@ -25,4 +26,5 @@ def main():
         except KeyboardInterrupt:
             pass
     else:
-        shell.run(args)
+        result = shell.run(args)
+        sys.exit(result)
