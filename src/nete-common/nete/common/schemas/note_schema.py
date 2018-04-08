@@ -1,11 +1,16 @@
 from marshmallow import Schema, fields, post_load
 from nete.common.models.note import Note
 import datetime
-import uuid
 
 
 class NoteSchema(Schema):
-    id = fields.UUID(required=True, allow_none=False, missing=uuid.uuid4)
+
+    id = fields.UUID(
+        required=True,
+        allow_none=False)
+    revision_id = fields.UUID(
+        required=True,
+        allow_none=True)
     created_at = fields.DateTime(
         required=True,
         allow_none=False,

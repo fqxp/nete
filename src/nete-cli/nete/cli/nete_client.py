@@ -51,9 +51,12 @@ class NeteClient:
             data=note_schema.dumps(note))
         return self.note_schema.loads(response.text)
 
-    def update_note(self, note):
+    def update_note(self, note, old_revision_id):
         self._put(
             '/notes/{}'.format(note.id),
+            headers={
+                'if-match': str(old_revision_id),
+            },
             data=self.note_schema.dumps(note))
 
     def delete_note(self, note_id):
@@ -72,10 +75,11 @@ class NeteClient:
             data=data)
         return self._send(request)
 
-    def _put(self, path, data, *args, **kwargs):
+    def _put(self, path, data, *args, headers=None, **kwargs):
         request = requests.Request(
             'PUT',
             self._url(path, *args, **kwargs),
+            headers=headers,
             data=data)
         return self._send(request)
 

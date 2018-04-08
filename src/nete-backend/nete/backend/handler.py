@@ -3,6 +3,8 @@ from nete.common.schemas.note_schema import NoteSchema
 from aiohttp import web
 import uuid
 
+IMMUTABLE_FIELDS = ('id', 'created_at',)
+
 
 class Handler:
     def __init__(self, storage):
@@ -10,16 +12,6 @@ class Handler:
         self.note_schema = NoteSchema()
 
     async def index(self, request):
-        """
-        ---
-        description: Retrieve a list of notes.
-        responses:
-          "200":
-            description: Successful operation.
-            content:
-              "application/json":
-                "$ref": "#/components/schemas/NoteCollection"
-        """
         notes = await self.storage.list()
         return web.Response(
             status=200,
@@ -27,85 +19,67 @@ class Handler:
             body=self.note_schema.dumps(notes, many=True))
 
     async def get_note(self, request):
-        """
-        ---
-        description: Retrieve a note.
-        parameters:
-          name: note_id
-          in: path
-          required: true
-        responses:
-          "200":
-            description: Successful operation.
-            content:
-              "application/json":
-                "$ref": "#/components/schemas/Note"
-        """
         note_id = request.match_info['note_id']
         try:
             note = await self.storage.read(note_id)
-            return web.Response(
-                status=200,
-                content_type='application/json',
-                body=self.note_schema.dumps(note))
         except NotFound:
-            return web.HTTPNotFound()
+            raise web.HTTPNotFound()
+
+        return web.Response(
+            status=200,
+            content_type='application/json',
+            headers={
+                'etag': str(note.revision_id),
+            },
+            body=self.note_schema.dumps(note))
 
     async def create_note(self, request):
-        """
-        ---
-        description: Create a note
-        produces:
-        - application/json
-        responses:
-          "201":
-            description: Successful operation.
-            headers:
-              Location:
-                description: Path of the newly created note
-            content:
-              "application/json":
-                "$ref": "#/components/schemas/Note"
-        """
-        note = self.note_schema.loads(await request.text())
+        note = self.note_schema.loads(
+            await request.text(),
+            partial=['id', 'revision_id'])
+        if note.id is None:
+            note.id = uuid.uuid4()
+        if note.revision_id is None:
+            note.revision_id = uuid.uuid4()
         await self.storage.write(note)
         note_url = request.app.router['note'].url_for(note_id=str(note.id))
         return web.Response(
             status=201,
             content_type='application/json',
-            headers={'Location': str(note_url)},
+            headers={
+                'location': str(note_url)
+            },
             body=self.note_schema.dumps(note))
 
     async def update_note(self, request):
-        """
-        ---
-        description: Update a note
-        responses:
-          "204":
-            description: Successful operation.
-        """
+        if 'if-match' not in request.headers:
+            raise web.HTTPBadRequest(reason='If-Match header is missing')
+
         note_id = request.match_info['note_id']
         note = self.note_schema.loads(await request.text())
-        if note.id != uuid.UUID(note_id):
-            return web.HTTPUnprocessableEntity()
-        # check whether item already exists
-        await self.storage.read(note_id)
+        old_note = await self.storage.read(note_id)
+
+        if str(old_note.revision_id) != request.headers.get('if-match'):
+            raise web.HTTPConflict(
+                reason='Edit conflict, resource has been changed '
+                'since last update')
+
+        changed_immutable_attributes = list(
+            field
+            for field in IMMUTABLE_FIELDS
+            if getattr(note, field) != getattr(old_note, field))
+        if any(changed_immutable_attributes):
+            raise web.HTTPUnprocessableEntity(
+                reason='Tried to update immutable attributes: {!r}'.format(changed_immutable_attributes))
+
         await self.storage.write(note)
 
-        return web.Response(status=204)
+        return web.Response(
+            status=200,
+            content_type='application/json',
+            body=self.note_schema.dumps(note))
 
     async def delete_note(self, request):
-        """
-        ---
-        description: Delete a note.
-        parameters:
-          name: note_id
-          in: path
-          required: true
-        responses:
-          "204":
-            description: Successful operation.
-        """
         note_id = request.match_info['note_id']
         try:
             await self.storage.delete(note_id)
