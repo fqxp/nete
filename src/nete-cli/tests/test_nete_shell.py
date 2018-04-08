@@ -95,12 +95,14 @@ def test_new_lets_user_edit_note_and_saves_it(nete_shell, nete_client, capsys):
 def test_edit_lets_user_edit_note_and_saves_it(nete_shell, nete_client):
     note = Note(
         id=uuid.UUID('80463678-3882-458e-a12c-eb78059f3a52'),
+        revision_id=uuid.UUID('10463678-3882-458e-a12c-eb78059f3a52'),
         title='TITLE',
         text='TEXT',
         created_at=datetime.datetime(2017, 1, 1, 12, 0, 0, tzinfo=pytz.UTC),
         updated_at=datetime.datetime(2017, 1, 1, 12, 0, 0, tzinfo=pytz.UTC))
     note_after_editing = Note(
         id=uuid.UUID('80463678-3882-458e-a12c-eb78059f3a52'),
+        revision_id=uuid.UUID('deadbeef-dead-dead-dead-deaddeaddead'),
         title='UPDATED TITLE',
         text='UPDATED TEXT',
         created_at=datetime.datetime(2017, 1, 1, 12, 0, 0, tzinfo=pytz.UTC),
@@ -113,7 +115,9 @@ def test_edit_lets_user_edit_note_and_saves_it(nete_shell, nete_client):
     nete_client.get_note.assert_called_once_with(
         uuid.UUID('80463678-3882-458e-a12c-eb78059f3a52'))
     nete.cli.nete_shell.edit_note.assert_called_once_with(note)
-    nete_client.update_note.assert_called_once_with(note_after_editing)
+    nete_client.update_note.assert_called_once_with(
+        note_after_editing,
+        old_revision_id=uuid.UUID('10463678-3882-458e-a12c-eb78059f3a52'))
     assert result == 0
 
 
