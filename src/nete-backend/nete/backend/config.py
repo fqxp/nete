@@ -71,6 +71,7 @@ def build_parser():
     parser.add_argument('-s', '--storage', dest='storage.type')
     parser.add_argument('--logfile', dest='logfile')
     parser.add_argument('--storage-base-dir', dest='storage.base_dir')
+    parser.add_argument('--sync-url', dest='sync.url')
     parser.add_argument('-V', '--version', action='version',
                         version=__version__)
     return parser
@@ -86,6 +87,7 @@ defaults = {
     'storage.base_dir': os.path.join(
         XDG_DATA_HOME,
         'nete/backend/storage'),
+    'sync.url': None,
 }
 
 config = Config('backend.rc', build_parser(), defaults)

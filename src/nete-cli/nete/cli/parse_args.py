@@ -44,6 +44,12 @@ def parse_args(config):
     rm_parser.set_defaults(cmd='rm')
     rm_parser.set_defaults(options=options(rm_parser))
 
+    sync_parser = subparsers.add_parser(
+        'sync',
+        help='Synchronize with remote backend')
+    sync_parser.set_defaults(cmd='sync')
+    sync_parser.set_defaults(options=options(sync_parser))
+
     return parser.parse_args()
 
 

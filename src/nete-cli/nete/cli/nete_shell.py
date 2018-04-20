@@ -60,6 +60,9 @@ class NeteShell:
                 print('Cannot remove {}, not found.'.format(note_id))
                 return 1
 
+    def sync(self):
+        self.nete_client.sync()
+
     def complete_note_id(self, text):
         notes = self.nete_client.list()
         return (

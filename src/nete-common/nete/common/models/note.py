@@ -1,7 +1,7 @@
 class Note:
     def __init__(self, id=None, revision_id=None,
-                 created_at=None, updated_at=None, title='',
-                 text=''):
+                 created_at=None, updated_at=None, title=None,
+                 text=None):
         self.id = id
         self.revision_id = revision_id
         self.created_at = created_at

@@ -1,22 +1,29 @@
 from nete.backend.storage.exceptions import NotFound
+from nete.backend.sync import Synchronizer
 from nete.common.schemas.note_schema import NoteSchema
 from aiohttp import web
+import logging
 import uuid
+
+logger = logging.getLogger(__name__)
 
 IMMUTABLE_FIELDS = ('id', 'created_at',)
 
 
 class Handler:
-    def __init__(self, storage):
+    def __init__(self, storage, sync_url=None):
         self.storage = storage
+        self.sync_url = sync_url
         self.note_schema = NoteSchema()
+        self.note_index_schema = NoteSchema(exclude=['text',])
 
     async def index(self, request):
         notes = await self.storage.list()
+        body = self.note_index_schema.dumps(notes, many=True)
         return web.Response(
             status=200,
             content_type='application/json',
-            body=self.note_schema.dumps(notes, many=True))
+            body=body)
 
     async def get_note(self, request):
         note_id = request.match_info['note_id']
@@ -86,3 +93,10 @@ class Handler:
             return web.Response(status=204)
         except NotFound:
             return web.HTTPNotFound()
+
+    async def synchronize(self, request):
+        if not self.sync_url:
+            raise web.HTTPInternalServerError(text='No sync URL defined')
+        synchronizer = Synchronizer(self.storage, self.sync_url)
+        await synchronizer.synchronize()
+        return web.Response(status=204)
