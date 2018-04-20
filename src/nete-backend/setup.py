@@ -26,7 +26,6 @@ setup(
     ],
     tests_require=[
         'aioreloader',
-        'pexpect',
         'pytest',
         'pytest-aiohttp',
         'pytest-asyncio',

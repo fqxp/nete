@@ -19,7 +19,3 @@ coverage.xml
 # nete
 cli.rc
 backend.rc
-
-# nete tests
-pexpect*.log
-.pexpect*.log

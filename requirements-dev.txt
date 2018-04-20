@@ -1,5 +1,4 @@
 aioreloader==0.2.0
-pexpect==4.5.0
 pytest-aiohttp==0.3.0
 pytest-asyncio==0.8.0
 pytest-freezegun==0.2.0

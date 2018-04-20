@@ -25,7 +25,6 @@ setup(
         'pytest-runner',
     ],
     tests_require=[
-        'pexpect',
         'pytest',
         'pytest-freezegun',
         'pytest-runner',
