@@ -38,13 +38,6 @@ def parse_args(config):
     new_parser.set_defaults(cmd='new')
     new_parser.set_defaults(options=options(new_parser))
 
-    repl_parser = subparsers.add_parser('repl', help='Run REPL')
-    repl_parser.set_defaults(cmd='repl')
-    repl_parser.set_defaults(options=options(repl_parser))
-
-    repl_parser = subparsers.add_parser('repl', help='Run REPL')
-    repl_parser.set_defaults(cmd='repl')
-
     rm_parser = subparsers.add_parser('rm', help='Delete notes')
     rm_parser.add_argument('note_ids', type=str, nargs='+',
                            help='Note IDs')
