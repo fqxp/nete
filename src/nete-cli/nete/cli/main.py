@@ -2,7 +2,6 @@ from .config import Config
 from .parse_args import parse_args
 from .nete_client import NeteClient
 from .nete_shell import NeteShell
-from .repl import Repl
 import sys
 
 
@@ -19,12 +18,5 @@ def main():
     nete_client = NeteClient(config['backend.url'])
     shell = NeteShell(nete_client)
 
-    if args.cmd == 'repl':
-        repl = Repl(shell)
-        try:
-            repl.cmdloop()
-        except KeyboardInterrupt:
-            pass
-    else:
-        result = shell.run(args)
-        sys.exit(result)
+    result = shell.run(args)
+    sys.exit(result)
