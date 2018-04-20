@@ -23,8 +23,11 @@ def build_storage(config):
 
 
 def main():
-    logging.basicConfig(level=logging.INFO)
     config.parse_args(sys.argv[1:])
+    logging.basicConfig(
+        filename=config['logfile'],
+        filemode='w',
+        level=logging.INFO)
 
     log_level = logging.DEBUG if config['debug'] else logging.INFO
     logging.getLogger().setLevel(log_level)

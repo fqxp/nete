@@ -69,6 +69,7 @@ def build_parser():
     parser.add_argument('-P', '--api-port', type=int, dest='api.port')
     parser.add_argument('-S', '--api-socket', dest='api.socket')
     parser.add_argument('-s', '--storage', dest='storage.type')
+    parser.add_argument('--logfile', dest='logfile')
     parser.add_argument('--storage-base-dir', dest='storage.base_dir')
     parser.add_argument('-V', '--version', action='version',
                         version=__version__)
@@ -80,6 +81,7 @@ defaults = {
     'api.host': 'localhost',
     'api.port': 8080,
     'api.socket': None,
+    'logfile': None,
     'storage.type': 'filesystem',
     'storage.base_dir': os.path.join(
         XDG_DATA_HOME,
