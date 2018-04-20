@@ -1,50 +1,47 @@
-from tools.spawn import spawn
+from tools.pytest_io import pytest_io
+from fixtures.socket import make_socket_fixture
+from fixtures.backend import backend
+from fixtures.config import config_fixture
 from nete.cli.test_utils.editor import Editor
 import os
-import os.path
-import pexpect
 import pytest
-import subprocess
+import re
 import tempfile
+
+socket = make_socket_fixture()
 
 
 @pytest.fixture
-def socket():
-    with tempfile.TemporaryDirectory() as sock_tmp_dir:
-        yield os.path.join(sock_tmp_dir, 'nete.sock')
+def backend_config(socket):
+    with tempfile.TemporaryDirectory() as storage_base_dir:
+        config = {
+            'api': {
+                'socket': socket,
+            },
+            'storage': {
+                'type': 'filesystem',
+                'base_dir': storage_base_dir,
+            },
+        }
+        with config_fixture(config) as filename:
+            yield filename
+
+
+@pytest.fixture
+def local_backend(backend_config):
+    with backend(backend_config):
+        yield
 
 
 @pytest.fixture
 def cli_config(socket):
-    with tempfile.NamedTemporaryFile() as config_file:
-        config_file.write('[backend]\nurl = local:{}'
-                          .format(socket)
-                          .encode('utf-8'))
-        config_file.flush()
-        yield config_file.name
-
-
-@pytest.fixture
-def server(socket):
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        process = pexpect.spawn(
-            'nete-backend '
-            '--no-rc '
-            '--storage filesystem '
-            '--storage-base-dir {storage_base_dir} '
-            '--api-socket {socket}'
-            .format(storage_base_dir=tmp_dir, socket=socket),
-            logfile=open('/tmp/pexpect-server.log', 'wb'),
-            timeout=5)
-        process.expect('.*Starting server on.*')
-        yield
-
-        process.terminate()
-        try:
-            process.wait()
-        except subprocess.TimeoutExpired:
-            process.kill()
-            process.wait()
+    config = {
+        'backend': {
+            'url': 'local:{}'.format(socket),
+        }
+    }
+    with config_fixture(config) as filename:
+        yield filename
 
 
 @pytest.fixture
@@ -54,54 +51,51 @@ def editor():
 
 
 @pytest.fixture
-def run_nete(server, editor, socket, cli_config):
-    def run_nete(*args):
-        env = os.environ.copy()
-        env.update(editor.env())
-        env['NETE_CONFIG_FILE'] = cli_config
-        return spawn(
-            'nete',
-            list(args),
-            env=env,
-            timeout=2)
-    return run_nete
+def nete(editor, cli_config):
+    env = {
+        **os.environ,
+        **editor.env(),
+        'NETE_CONFIG_FILE': cli_config,
+    }
+    return pytest_io('nete', env=env)
 
 
-def test_new_and_ls(server, run_nete, editor):
+def test_new_and_ls(local_backend, cli_config, nete, editor):
+    out, err = nete('new', 'NEW NOTE')
+    assert err == ''
+    mo = re.match(r'Created note with id (.*)', out)
+    assert nete.returncode() == 0
+    assert mo is not None
+    note_id = mo.group(1)
+
+    out, err = nete('ls')
+    assert err == ''
+    assert nete.returncode() == 0
+    assert out == '{}   NEW NOTE\n'.format(note_id)
+
+
+def test_new_and_cat(local_backend, nete, editor):
     editor.set_content('Title: NEW NOTE\n\nFOO')
-    proc = run_nete('new', 'NEW NOTE')
-    proc.assertExpect('Created note with id (.*)')
-    note_id = proc.match[1].split()[0].decode('utf-8')
-    proc.assertExpect(pexpect.EOF)
+    out, err = nete('new', 'NEW NOTE')
+    mo = re.match(r'Created note with id (.*)', out)
+    assert mo is not None
+    note_id = mo.group(1)
 
-    proc = run_nete('ls')
-    proc.assertExpect('{}   NEW NOTE'.format(note_id))
-    proc.assertExpect(pexpect.EOF)
+    out, err = nete('cat', note_id)
+    assert err == ''
+    assert out.endswith('\n\nFOO\n')
 
 
-def test_new_and_cat(server, run_nete, editor):
+def test_edit(local_backend, nete, editor):
     editor.set_content('Title: NEW NOTE\n\nFOO')
-    proc = run_nete('new', 'NEW NOTE')
-    proc.assertExpect('Created note with id (.*)')
-    note_id = proc.match[1].split()[0].decode('utf-8')
-    proc.assertExpect(pexpect.EOF)
-
-    proc = run_nete('cat', note_id)
-    proc.assertExpect('.*FOO')
-    proc.assertExpect(pexpect.EOF)
-
-
-def test_edit(server, run_nete, editor):
-    editor.set_content('Title: NEW NOTE\n\nFOO')
-    proc = run_nete('new', 'NEW NOTE')
-    proc.assertExpect('Created note with id (.*)')
-    note_id = proc.match[1].split()[0].decode('utf-8')
-    proc.assertExpect(pexpect.EOF)
+    out, err = nete('new', 'NEW NOTE')
+    mo = re.match(r'Created note with id (.*)', out)
+    assert mo is not None
+    note_id = mo.group(1)
 
     editor.set_content('Title: NEW NOTE\n\nBAR')
-    proc = run_nete('edit', note_id)
-    proc.assertExpect(pexpect.EOF)
+    out, err = nete('edit', note_id)
+    assert nete.returncode() == 0
 
-    proc = run_nete('cat', note_id)
-    proc.assertExpect('.*BAR')
-    proc.assertExpect(pexpect.EOF)
+    out, err = nete('cat', note_id)
+    assert out.endswith('\n\nBAR\n')

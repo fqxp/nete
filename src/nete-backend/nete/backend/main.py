@@ -35,7 +35,7 @@ def main():
     storage = build_storage(config)
     storage.open()
 
-    app = create_app(storage)
+    app = create_app(storage, config['sync.url'])
 
     if config['debug'] and aioreloader:
         aioreloader.start(hook=storage.close)
@@ -45,9 +45,14 @@ def main():
             logger.info('Starting server on socket {}'
                         .format(config['api.socket']))
             web.run_app(app, path=config['api.socket'])
+            logger.info('socket service ended.')
         else:
             logger.info('Starting server on tcp://{}:{}'.format(
                 config['api.host'], config['api.port']))
             web.run_app(app, host=config['api.host'], port=config['api.port'])
+    except Exception as e:
+        logger.error('Backend error: {}'.format(e))
+        raise
     finally:
         storage.close()
+        logger.info('nete-backend ended.')

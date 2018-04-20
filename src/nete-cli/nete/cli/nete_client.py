@@ -1,4 +1,5 @@
 from nete.common.schemas.note_schema import NoteSchema
+from nete.common.schemas.note_index_schema import NoteIndexSchema
 import requests
 import requests_unixsocket
 import urllib.parse
@@ -19,6 +20,7 @@ class NeteClient:
         self.base_url = self._prepare_base_url(backend_url)
         self.session = self._build_session()
         self.note_schema = NoteSchema()
+        self.note_index_schema = NoteIndexSchema()
 
     def _prepare_base_url(self, backend_url):
         parsed_url = urllib.parse.urlparse(backend_url)
@@ -38,7 +40,7 @@ class NeteClient:
 
     def list(self):
         response = self._get('/notes')
-        return self.note_schema.loads(response.text, many=True)
+        return self.note_index_schema.loads(response.text, many=True)
 
     def get_note(self, note_id):
         response = self._get('/notes/{}', note_id)
@@ -61,6 +63,9 @@ class NeteClient:
 
     def delete_note(self, note_id):
         self._delete('/notes/{}', note_id)
+
+    def sync(self):
+        self._get('/notes/sync')
 
     def _get(self, path, *args, **kwargs):
         request = requests.Request(

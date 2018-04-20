@@ -47,7 +47,7 @@ class TestNeteClient:
                 id=uuid.UUID('b08cee6f-cc15-44d5-86d4-b20dfb1295b8'),
                 revision_id=uuid.UUID('0244174a-3dcf-4cca-af46-5f5063d53599'),
                 title='TITLE',
-                text='TEXT',
+                text=None,
                 created_at=datetime.datetime(2017, 11, 12, 17, 55, 0),
                 updated_at=datetime.datetime(2017, 11, 12, 18, 00, 0),
                 ),
@@ -55,7 +55,7 @@ class TestNeteClient:
                 id=uuid.UUID('f75ec26c-a567-4069-86c7-17610d2a7b71'),
                 revision_id=uuid.UUID('9244174a-3dcf-4cca-af46-5f5063d53599'),
                 title='ANOTHER TITLE',
-                text='TEXT TEXT TEXT',
+                text=None,
                 created_at=datetime.datetime(2018, 11, 13, 17, 55, 0),
                 updated_at=datetime.datetime(2018, 11, 13, 18, 00, 0),
                 )

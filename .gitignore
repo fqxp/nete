@@ -19,3 +19,5 @@ coverage.xml
 # nete
 cli.rc
 backend.rc
+remote-cli.rc
+remote-backend.rc
