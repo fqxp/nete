@@ -47,7 +47,7 @@ class NeteClient:
         return self.note_schema.loads(response.text)
 
     def create_note(self, note):
-        note_schema = NoteSchema(exclude=('id', 'created_at', 'updated_at'))
+        note_schema = NoteSchema(exclude=('created_at', 'updated_at'))
         response = self._post(
             '/notes',
             data=note_schema.dumps(note))

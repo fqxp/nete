@@ -95,6 +95,7 @@ def test_edit(local_backend, nete, editor):
 
     editor.set_content('Title: NEW NOTE\n\nBAR')
     out, err = nete('edit', note_id)
+    assert err == ''
     assert nete.returncode() == 0
 
     out, err = nete('cat', note_id)
