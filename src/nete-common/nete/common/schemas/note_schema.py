@@ -10,7 +10,7 @@ class NoteSchema(Schema):
         allow_none=False)
     revision_id = fields.UUID(
         required=True,
-        allow_none=True)
+        allow_none=False)
     created_at = fields.DateTime(
         required=True,
         allow_none=False,

@@ -42,12 +42,8 @@ class Handler:
 
     async def create_note(self, request):
         note = self.note_schema.loads(
-            await request.text(),
-            partial=['id', 'revision_id'])
-        if note.id is None:
-            note.id = uuid.uuid4()
-        if note.revision_id is None:
-            note.revision_id = uuid.uuid4()
+            await request.text())
+
         await self.storage.write(note)
         note_url = request.app.router['note'].url_for(note_id=str(note.id))
         return web.Response(
@@ -62,14 +58,23 @@ class Handler:
         if 'if-match' not in request.headers:
             raise web.HTTPBadRequest(reason='If-Match header is missing')
 
-        note_id = request.match_info['note_id']
+        note_id = uuid.UUID(request.match_info['note_id'])
         note = self.note_schema.loads(await request.text())
+
+        if note.id != note_id:
+            raise web.HTTPUnprocessableEntity(
+                reason='Ids from path and from JSON body don’t match')
+
         old_note = await self.storage.read(note_id)
 
-        if str(old_note.revision_id) != request.headers.get('if-match'):
+        if old_note.revision_id != uuid.UUID(request.headers.get('if-match')):
             raise web.HTTPConflict(
                 reason='Edit conflict, resource has been changed '
                 'since last update')
+
+        if note.revision_id == old_note.revision_id:
+            raise web.HTTPUnprocessableEntity(
+                reason='New revision id needs to be different from old revision id')
 
         changed_immutable_attributes = list(
             field

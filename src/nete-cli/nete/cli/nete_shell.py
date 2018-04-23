@@ -28,11 +28,11 @@ class NeteShell:
     def edit(self, note_id):
         try:
             note = self.nete_client.get_note(uuid.UUID(note_id))
-            old_revision_id = note.revision_id
             changed_note = edit_note(note)
+            changed_note.revision_id = uuid.uuid4()
             self.nete_client.update_note(
                 changed_note,
-                old_revision_id=old_revision_id)
+                old_revision_id=note.revision_id)
             return 0
         except NotFound:
             print('Cannot edit {}, not found.'.format(note_id))
@@ -45,7 +45,10 @@ class NeteShell:
         return 0
 
     def new(self, title):
-        note = Note(title=title, text='')
+        note = Note(id=uuid.uuid4(),
+                    revision_id=uuid.uuid4(),
+                    title=title,
+                    text='')
         changed_note = edit_note(note)
         note = self.nete_client.create_note(changed_note)
         print('Created note with id {}'.format(note.id))

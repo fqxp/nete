@@ -117,19 +117,6 @@ class TestHandler:
             'updated_at': now,
         }
 
-    async def test_create_note_sets_id_and_revision_id_if_missing(
-            self, client, storage):
-        response = await client.post(
-            '/notes',
-            json={
-                'title': 'TITLE',
-                'text': 'TEXT'
-            })
-
-        created_note = json.loads(await response.text())
-        assert created_note['id'] is not None
-        assert created_note['revision_id'] is not None
-
     async def test_create_note_returns_422_if_data_is_invalid(
             self, client, storage):
         response = await client.post(
@@ -189,10 +176,20 @@ class TestHandler:
 
     async def test_update_note_returns_400_if_data_is_not_json(
             self, client, storage):
+        old_revision_id = uuid.uuid4()
+        storage.read.return_value = Note(
+            id=id,
+            revision_id=old_revision_id,
+            created_at=datetime.datetime(2018, 3, 6, 17, 35, 00, tzinfo=pytz.UTC),
+            updated_at=datetime.datetime(2018, 4, 7, 10, 23, 45, tzinfo=pytz.UTC),
+            title='OLD TITLE',
+            text='OLD TEXT'
+            )
+
         response = await client.put(
             '/notes/f68c7f97-611a-49de-b9cd-c1fc63300086',
             headers={
-                'if-match': 'b15fd4a1-1d6e-4a20-a77e-ace6a0350bdc',
+                'if-match': str(old_revision_id),
             },
             data=b'{]')
         assert response.status == 400
@@ -214,12 +211,40 @@ class TestHandler:
         storage.write.assert_not_called()
         assert response.status == 404
 
+    async def test_update_note_returns_422_if_ids_from_path_and_data_dont_match(
+            self, client, storage):
+        response = await client.put(
+            '/notes/bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+            json={
+                'id': 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+                'revision_id': str(uuid.uuid4()),
+                'created_at': '2018-03-06T17:35:00+00:00',
+                'updated_at': '2018-04-07T10:23:45+00:00',
+                'title': 'NEW TITLE',
+                'text': 'NEW TEXT',
+            },
+            headers={
+                'if-match': str(uuid.uuid4()),
+            })
+
+        assert response.status == 422
+
     async def test_update_note_returns_422_if_data_is_invalid(
             self, client, storage):
+        old_revision_id = uuid.uuid4()
+        storage.read.return_value = Note(
+            id=id,
+            revision_id=old_revision_id,
+            created_at=datetime.datetime(2018, 3, 6, 17, 35, 00, tzinfo=pytz.UTC),
+            updated_at=datetime.datetime(2018, 4, 7, 10, 23, 45, tzinfo=pytz.UTC),
+            title='OLD TITLE',
+            text='OLD TEXT'
+            )
+
         response = await client.put(
             '/notes/f68c7f97-611a-49de-b9cd-c1fc63300086',
             headers={
-                'if-match': 'b15fd4a1-1d6e-4a20-a77e-ace6a0350bdc',
+                'if-match': str(old_revision_id),
             },
             json={
                 'id': 'f68c7f97-611a-49de-b9cd-c1fc63300086',
@@ -234,8 +259,8 @@ class TestHandler:
         old_revision_id = uuid.uuid4()
         new_revision_id = uuid.uuid4()
         storage.read.return_value = Note(
-            id=str(id),
-            revision_id=str(old_revision_id),
+            id=id,
+            revision_id=old_revision_id,
             created_at=datetime.datetime(2018, 3, 6, 17, 35, 00, tzinfo=pytz.UTC),
             updated_at=datetime.datetime(2018, 4, 7, 10, 23, 45, tzinfo=pytz.UTC),
             title='OLD TITLE',
@@ -272,10 +297,39 @@ class TestHandler:
         id = uuid.uuid4()
         old_revision_id = uuid.uuid4()
         new_revision_id = uuid.uuid4()
-        another_revision_id = uuid.uuid4()
         storage.read.return_value = Note(
-            id=str(id),
-            revision_id=str(another_revision_id),
+            id=id,
+            revision_id=old_revision_id,
+            title='ANOTHER TITLE',
+            text='ANOTHER TEXT',
+            )
+
+        response = await client.put(
+            '/notes/{}'.format(id),
+            json={
+                'id': str(id),
+                'revision_id': str(new_revision_id),
+                'created_at': '2018-03-06T17:35:00+00:00',
+                'updated_at': '2018-04-07T10:23:45+00:00',
+                'title': 'NEW TITLE',
+                'text': 'NEW TEXT',
+            },
+            headers={
+                'if-match': str(uuid.uuid4()),
+            })
+
+        storage.write.assert_not_called()
+        assert response.status == 409
+
+    async def test_update_note_returns_422_if_revision_has_not_been_updated(
+            self, client, storage):
+        id = uuid.uuid4()
+        old_revision_id = uuid.uuid4()
+        storage.read.return_value = Note(
+            id=id,
+            revision_id=old_revision_id,
+            created_at=datetime.datetime(2018, 3, 6, 17, 35, 00, tzinfo=pytz.UTC),
+            updated_at=datetime.datetime(2018, 4, 7, 10, 23, 45, tzinfo=pytz.UTC),
             title='ANOTHER TITLE',
             text='ANOTHER TEXT',
             )
@@ -284,7 +338,9 @@ class TestHandler:
             '/notes/{}'.format(str(id)),
             json={
                 'id': str(id),
-                'revision_id': str(new_revision_id),
+                'revision_id': str(old_revision_id),
+                'created_at': '2018-03-06T17:35:00+00:00',
+                'updated_at': '2018-04-07T10:23:45+00:00',
                 'title': 'NEW TITLE',
                 'text': 'NEW TEXT',
             },
@@ -293,7 +349,7 @@ class TestHandler:
             })
 
         storage.write.assert_not_called()
-        assert response.status == 409
+        assert response.status == 422
 
     async def test_delete_note(self, client, storage):
         response = await client.delete('/notes/ID')
