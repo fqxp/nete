@@ -8,7 +8,7 @@ import time
 def backend(config_filename, prefix='backend'):
     args = ['-c', config_filename]
     process = subprocess.Popen(
-        ['nete-backend', *args],
+        ['nete-backend', '-D', *args],
         stdout=sys.stdout,
         stderr=subprocess.STDOUT)
     time.sleep(1)
