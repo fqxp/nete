@@ -119,12 +119,13 @@ def remote_nete(remote_editor, remote_cli_config):
 def test_sync_copies_local_new_note_to_remote(
         local_backend, remote_backend, local_editor,
         remote_nete, local_nete):
-
+    # create on local side
     local_editor.set_content('Title: NEW NOTE\n\nFOO')
     out, err = local_nete('new', 'NEW NOTE')
     mo = re.match(r'Created note with id (.*)', out)
     note_id = mo.group(1)
 
+    # sync
     out, err = local_nete('sync')
     assert err == ''
     assert local_nete.returncode() == 0
@@ -136,59 +137,143 @@ def test_sync_copies_local_new_note_to_remote(
 def test_sync_copies_remote_new_note_to_local(
         local_backend, remote_backend, remote_editor,
         remote_nete, local_nete):
+    # create on remote side
     remote_editor.set_content('Title: NEW NOTE\n\nFOO')
     out, err = remote_nete('new', 'NEW NOTE')
     mo = re.match(r'Created note with id (.*)', out)
     note_id = mo.group(1)
 
+    # sync
     out, err = local_nete('sync')
     assert err == ''
     assert local_nete.returncode() == 0
 
+    out, err = local_nete('cat', note_id)
+    assert err == ''
+    assert 'Title: NEW NOTE\n' in out
+    assert out.endswith('\n\nFOO\n'), '»{}« should end with »FOO«, but didn’t'.format(out)
+
+
+def test_sync_updates_remote_note_if_changed_locally(
+        local_backend, remote_backend,
+        local_editor, remote_editor,
+        remote_nete, local_nete):
+    # create on remote side
+    local_editor.set_content('Title: TITLE\n\nFOO')
+    out, err = local_nete('new', 'TITLE')
+    mo = re.match(r'Created note with id (.*)', out)
+    note_id = mo.group(1)
+
+    # sync
+    out, err = local_nete('sync')
+    assert err == ''
+    assert local_nete.returncode() == 0
+
+    # edit locally
+    local_editor.set_content('Title: OTHER TITLE\n\nBAR')
+    out, err = local_nete('edit', note_id)
+    assert err == ''
+
+    # sync again
+    out, err = local_nete('sync')
+    assert err == ''
+    assert local_nete.returncode() == 0
+
+    out, err = remote_nete('cat', note_id)
+    assert err == ''
+    assert 'Title: OTHER TITLE\n' in out
+    assert out.endswith('\n\nBAR\n'), '»{}« should end with »FOO«, but didn’t'.format(out)
+
+
+def test_sync_updates_local_note_if_changed_remotely(
+        local_backend, remote_backend,
+        local_editor, remote_editor,
+        remote_nete, local_nete):
+    # create on remote side
+    local_editor.set_content('Title: TITLE\n\nFOO')
+    out, err = local_nete('new', 'TITLE')
+    mo = re.match(r'Created note with id (.*)', out)
+    note_id = mo.group(1)
+
+    # sync
+    out, err = local_nete('sync')
+    assert err == ''
+    assert local_nete.returncode() == 0
+
+    # edit remotely
+    remote_editor.set_content('Title: OTHER TITLE\n\nBAR')
+    out, err = remote_nete('edit', note_id)
+    assert err == ''
+
+    # sync again
+    out, err = local_nete('sync')
+    assert err == ''
+    assert local_nete.returncode() == 0
+
+    out, err = local_nete('cat', note_id)
+    assert err == ''
+    assert 'Title: OTHER TITLE\n' in out
+    assert out.endswith('\n\nBAR\n'), '»{}« should end with »BAR«, but didn’t'.format(out)
+
+
+def test_sync_creates_copy_of_conflicting_local_note_and_returns_its_id(
+        local_backend, remote_backend,
+        local_editor, remote_editor,
+        remote_nete, local_nete):
+    # create on remote side
+    local_editor.set_content('Title: TITLE\n\nFOO')
+    out, err = local_nete('new', 'TITLE')
+    mo = re.match(r'Created note with id (.*)', out)
+    note_id = mo.group(1)
+
+    # sync
+    out, err = local_nete('sync')
+    assert err == ''
+    assert local_nete.returncode() == 0
+
+    # edit locally
+    local_editor.set_content('Title: LOCAL TITLE\n\nLOCAL TEXT')
+    out, err = local_nete('edit', note_id)
+    assert err == ''
+
+    # edit remotely
+    remote_editor.set_content('Title: REMOTE TITLE\n\nREMOTE TEXT')
+    out, err = remote_nete('edit', note_id)
+    assert err == ''
+
+    # sync again
+    out, err = local_nete('sync')
+    assert err == ''
+    assert local_nete.returncode() == 0
+
+    # local result
+    out, err = local_nete('cat', note_id)
+    assert err == ''
+    assert 'Title: REMOTE TITLE\n' in out
+    assert out.endswith('\n\nREMOTE TEXT\n'), '»{}« should end with »REMOTE TEXT«, but didn’t'.format(out)
+
     out, err = local_nete('ls')
-    assert out == '{}   NEW NOTE\n'.format(note_id)
+    mo = re.match(r'(.*)   LOCAL TITLE\n(.*)   REMOTE TITLE\n', out)
+    assert mo, '»{}« wasn’t matched'.format(out).format(out)
+    conflict_copy_id = mo.group(1)
+    assert mo.group(2) == note_id
 
+    out, err = local_nete('cat', conflict_copy_id)
+    assert err == ''
+    assert out.endswith('\n\nLOCAL TEXT\n'), '»{}« should end with »LOCAL TEXT«, but it didn’t'.format(out)
 
-# def test_sync_copies_remote_new_note_to_local(
-#         remote_backend, local_backend, remote_editor,
-#         remote_nete, local_nete):
-#     remote_editor.set_content('Title: NEW NOTE\n\nFOO')
-#     proc = remote_nete('new', 'NEW NOTE')
-#     proc.assertExpect('Created note with id (.*)')
-#     note_id = proc.match[1].split()[0].decode('utf-8')
-#     proc.assertExpect(pexpect.EOF)
+    # remote result
+    out, err = remote_nete('cat', note_id)
+    assert err == ''
+    assert 'Title: REMOTE TITLE\n' in out
+    assert out.endswith('\n\nREMOTE TEXT\n'), '»{}« should end with »REMOTE TEXT«, but didn’t'.format(out)
 
-#     proc = remote_nete('sync')
-#     proc.assertExpect(pexpect.EOF)
+    out, err = remote_nete('ls')
+    mo = re.match(r'(.*)   LOCAL TITLE\n(.*)   REMOTE TITLE\n', out)
+    assert mo, '»{}« wasn’t matched'.format(out).format(out)
+    conflict_copy_id = mo.group(1)
+    assert mo.group(2) == note_id
 
-#     proc = local_nete('ls')
-#     proc.assertExpect('{}   NEW NOTE'.format(note_id))
-#     proc.assertExpect(pexpect.EOF)
-
-
-# def test_sync_updates_remote_note_if_updated_locally(
-#         remote_backend, local_backend, remote_editor,
-#         local_editor, remote_nete, local_nete):
-#     local_editor.set_content('Title: NEW NOTE\n\nFOO')
-#     proc = local_nete('new', 'NEW NOTE')
-#     proc.assertExpect('Created note with id (.*)')
-#     note_id = proc.match[1].split()[0].decode('utf-8')
-#     proc.assertExpect(pexpect.EOF)
-
-#     proc = local_nete('sync')
-#     proc.assertExpect(pexpect.EOF)
-
-#     proc = remote_nete('ls')
-#     proc.assertExpect('{}   NEW NOTE'.format(note_id))
-#     proc.assertExpect(pexpect.EOF)
-
-#     remote_editor.set_content('Title: CHANGED NOTE\n\nBAR')
-#     proc = remote_nete('edit', note_id)
-#     proc.assertExpect(pexpect.EOF)
-
-#     proc = local_nete('sync')
-#     proc.assertExpect(pexpect.EOF)
-
-#     proc = local_nete('ls')
-#     proc.assertExpect('{}   CHANGED NOTE'.format(note_id))
-#     proc.assertExpect(pexpect.EOF)
+    out, err = remote_nete('cat', conflict_copy_id)
+    assert err == ''
+    assert out.endswith('\n\nLOCAL TEXT\n'), '»{}« should end with »LOCAL TEXT«, but it didn’t'.format(out)
