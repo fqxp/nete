@@ -1,4 +1,5 @@
 from .lockable import Lockable
+from nete.backend.schemas import StatusItemSchema
 from nete.backend.storage.exceptions import NotFound
 from nete.common.schemas.note_schema import NoteSchema
 from concurrent.futures import ThreadPoolExecutor
@@ -13,6 +14,8 @@ logger = logging.getLogger(__name__)
 
 
 class FilesystemStorage(Lockable):
+
+    STATUS_FILENAME = 'status.json'
 
     def __init__(self, base_dir):
         self.base_dir = Path(base_dir)
@@ -56,6 +59,29 @@ class FilesystemStorage(Lockable):
         loop = asyncio.get_event_loop()
         await loop.run_in_executor(self.executor, os.unlink, filename)
 
+    # TODO: locking
+    def load_status(self):
+        if not os.path.exists(self._status_filename()):
+            return {}
+
+        with open(self._status_filename()) as f:
+            status_items = StatusItemSchema().loads(f.read(), many=True)
+            return {
+                status_item['note_id']: status_item['revision_id']
+                for status_item in status_items
+            }
+
+    @Lockable.ensure_lock
+    async def update_status(self):
+        status_items = [
+            {
+                'note_id': note.id,
+                'revision_id': note.revision_id,
+            } for note in await self.list()
+        ]
+        with open(self._status_filename(), 'w') as f:
+            f.write(StatusItemSchema().dumps(status_items, many=True))
+
     async def _read_file(self, filename):
         logger.debug('Opening file {} for reading'.format(filename))
         note_schema = NoteSchema()
@@ -67,3 +93,6 @@ class FilesystemStorage(Lockable):
 
     def _filename(self, id):
         return self.base_dir / '{}.nete'.format(id)
+
+    def _status_filename(self):
+        return os.path.join(self.base_dir, self.STATUS_FILENAME)
