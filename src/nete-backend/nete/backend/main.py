@@ -3,6 +3,8 @@ from .config import config
 from .storage.filesystem import FilesystemStorage
 from aiohttp import web
 import logging
+import os
+import os.path
 import sys
 try:
     import aioreloader
@@ -22,12 +24,19 @@ def build_storage(config):
     return storages[storage_type](**kwargs)
 
 
+def prepare(config):
+    os.makedirs(os.path.dirname(config['api.socket']), exist_ok=True)
+    os.makedirs(config['storage.base_dir'], exist_ok=True)
+
+
 def main():
     config.parse_args(sys.argv[1:])
     logging.basicConfig(
         filename=config['logfile'],
         filemode='w',
         level=logging.INFO)
+
+    prepare(config)
 
     log_level = logging.DEBUG if config['debug'] else logging.INFO
     logging.getLogger().setLevel(log_level)
@@ -41,15 +50,10 @@ def main():
         aioreloader.start(hook=storage.close)
 
     try:
-        if config['api.socket']:
-            logger.info('Starting server on socket {}'
-                        .format(config['api.socket']))
-            web.run_app(app, path=config['api.socket'])
-            logger.info('socket service ended.')
-        else:
-            logger.info('Starting server on tcp://{}:{}'.format(
-                config['api.host'], config['api.port']))
-            web.run_app(app, host=config['api.host'], port=config['api.port'])
+        logger.info('Starting server on socket {}'
+                    .format(config['api.socket']))
+        web.run_app(app, path=config['api.socket'])
+        logger.info('Socket service ended.')
     except Exception as e:
         logger.error('Backend error: {}'.format(e))
         raise
