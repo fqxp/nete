@@ -9,8 +9,7 @@ A configuration file may look like this:
 .. code-block:: ini
 
    [api]
-   host = localhost
-   port = 8080
+   socket = ./nete.socket
 
    [storage]
    type = filesystem
@@ -31,26 +30,24 @@ Command-Line Options
 ---------------------
 
 ``-c FILENAME``, ``--config FILENAME``
-  Read configuration from ``FILENAME`` instead of default location.
+  Read configuration from ``FILENAME`` instead of the default location
+  `$XDG_CONFIG_HOME/nete/backend.rc``.
 
 ``--no-rc``
   Do not read configuration from any file.
 
-``-H HOSTNAME``, ``--api-host HOSTNAME``
-  Hostname to whose IP address to bind the HTTP API port to (default:
-  ``localhost``).
-
-``-P PORT``, ``--api-port PORT``
-  Port to bind to (default: ``8080``).
-
-``-S FILENAME``, ``--api-socket FILENAME``
+``--api-socket FILENAME``, ``-S FILENAME``
   Unix domain socket to bind to (if given, host and port will be ignored)
-  (default: *not set*).
+  (default: `$XDG_RUNTIME_DIR/nete/socket`, which usually is
+  `/run/USER-id/nette/socket`).
 
 ``--storage-base-dir``
   Directory where to store notes (default
   ``$XDG_DATA_HOME/nete/backend/storage``, usually
   ``~/.local/nete/backend/storage``).
+
+``--sync-url URL``
+  URL of remote nete instance to synchronize notes with.
 
 ``--D``, ``--debug``
   Enable debug mode.

@@ -1,9 +1,5 @@
 [api]
-type = socket
-path = ./test.sock
-; type = tcp
-; host = localhost
-; port = 8080
+socket = ./test.sock
 
 [storage]
 type = filesystem

@@ -1,4 +1,4 @@
-from nete.common.xdg import XDG_CONFIG_HOME, XDG_DATA_HOME
+from nete.common.xdg import XDG_CONFIG_HOME, XDG_DATA_HOME, XDG_RUNTIME_DIR
 import argparse
 import configparser
 import logging
@@ -9,11 +9,15 @@ logger = logging.getLogger(__name__)
 
 __version__ = pkg_resources.get_distribution('nete-cli').version
 
+DEFAULT_CONFIG_FILENAME = os.path.join(
+    XDG_CONFIG_HOME,
+    'nete',
+    'backend.rc')
+
 
 class Config:
 
-    def __init__(self, rc_filename, parser, defaults):
-        self.rc_filename = rc_filename
+    def __init__(self, parser, defaults):
         self.parser = parser
         self.defaults = defaults
 
@@ -34,18 +38,15 @@ class Config:
                 or self.defaults.get(name))
 
     def _load_config(self):
-        xdg_config_filename = os.path.join(
-            XDG_CONFIG_HOME,
-            'nete',
-            self.rc_filename)
 
         if self.args.no_rc:
             return {}
         elif self.args.config:
             return self._read_file(self.args.config)
-        elif os.path.exists(xdg_config_filename):
-            return self._read_file(xdg_config_filename)
+        elif os.path.exists(DEFAULT_CONFIG_FILENAME):
+            return self._read_file(DEFAULT_CONFIG_FILENAME)
         else:
+            logger.info('Didn’t find any config file, continuing with default config')
             return {}
 
     def _read_file(self, filename):
@@ -65,8 +66,6 @@ def build_parser():
     parser.add_argument('-c', '--config', default=None)
     parser.add_argument('--no-rc', action='store_true', default=False)
     parser.add_argument('-D', '--debug', action='store_true')
-    parser.add_argument('-H', '--api-host', dest='api.host')
-    parser.add_argument('-P', '--api-port', type=int, dest='api.port')
     parser.add_argument('-S', '--api-socket', dest='api.socket')
     parser.add_argument('-s', '--storage', dest='storage.type')
     parser.add_argument('--logfile', dest='logfile')
@@ -79,9 +78,7 @@ def build_parser():
 
 defaults = {
     'debug': False,
-    'api.host': 'localhost',
-    'api.port': 8080,
-    'api.socket': None,
+    'api.socket': os.path.join(XDG_RUNTIME_DIR, 'nete', 'socket'),
     'logfile': None,
     'storage.type': 'filesystem',
     'storage.base_dir': os.path.join(
@@ -90,4 +87,4 @@ defaults = {
     'sync.url': None,
 }
 
-config = Config('backend.rc', build_parser(), defaults)
+config = Config(build_parser(), defaults)
