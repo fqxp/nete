@@ -5,7 +5,7 @@ import runpy
 
 here = os.path.abspath(os.path.dirname(__file__))
 
-__version__ = runpy.run_path('nete/common/__version__.py')['__version__']
+__version__ = runpy.run_path('nete/cli/__version__.py')['__version__']
 
 
 setup(
