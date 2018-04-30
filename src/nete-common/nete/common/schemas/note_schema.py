@@ -12,13 +12,11 @@ class NoteSchema(Schema):
         required=True,
         allow_none=False)
     created_at = fields.DateTime(
-        required=True,
         allow_none=False,
-        missing=lambda: datetime.datetime.utcnow().isoformat())
+        missing=lambda: datetime.datetime.utcnow())
     updated_at = fields.DateTime(
-        required=True,
         allow_none=False,
-        missing=lambda: datetime.datetime.utcnow().isoformat())
+        missing=lambda: datetime.datetime.utcnow())
     title = fields.Str(required=True)
     text = fields.Str(required=True)
 
