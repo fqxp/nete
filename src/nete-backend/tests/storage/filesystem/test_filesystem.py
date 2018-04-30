@@ -21,6 +21,8 @@ def storage():
 @pytest.fixture
 def new_note():
     return NoteSchema().load({
+        'id': '3b7f5ad1-2c35-487e-a01e-2a5259c434f9',
+        'revision_id': 'a7e0a4ac-af84-4797-97c4-95cb1ac7c7ed',
         'title': 'TITLE',
         'text': 'TEXT',
     })
