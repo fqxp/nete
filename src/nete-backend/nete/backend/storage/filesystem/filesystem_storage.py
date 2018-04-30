@@ -3,8 +3,8 @@ from nete.backend.schemas import StatusItemSchema
 from nete.backend.storage.exceptions import NotFound
 from nete.common.schemas.note_schema import NoteSchema
 from concurrent.futures import ThreadPoolExecutor
-from pathlib import Path
 import asyncio
+import glob
 import logging
 import os
 import os.path
@@ -18,13 +18,13 @@ class FilesystemStorage(Lockable):
     STATUS_FILENAME = 'status.json'
 
     def __init__(self, base_dir):
-        self.base_dir = Path(base_dir)
-        os.makedirs(str(self.base_dir), exist_ok=True)
+        self.base_dir = base_dir
+        os.makedirs(self.base_dir, exist_ok=True)
         self.executor = ThreadPoolExecutor()
 
     def open(self):
         logger.info('Opening storage in directory {}'.format(self.base_dir))
-        self.lock(self.base_dir / '.lock')
+        self.lock(os.path.join(self.base_dir, '.lock'))
 
     def close(self):
         self.unlock()
@@ -32,7 +32,7 @@ class FilesystemStorage(Lockable):
     @Lockable.ensure_lock
     async def list(self):
         note_list = []
-        for filename in self.base_dir.glob('*.nete'):
+        for filename in glob.glob(os.path.join(self.base_dir, '*.nete')):
             note = await self._read_file(filename)
             note_list.append(note)
 
@@ -44,7 +44,7 @@ class FilesystemStorage(Lockable):
 
     @Lockable.ensure_lock
     async def write(self, note):
-        filename = self._filename(str(note.id))
+        filename = self._filename(note.id)
         logger.debug('Opening file {} for writing'.format(filename))
         note_schema = NoteSchema()
         with open(filename, 'w') as fp:
@@ -91,8 +91,8 @@ class FilesystemStorage(Lockable):
         except FileNotFoundError:
             raise NotFound()
 
-    def _filename(self, id):
-        return self.base_dir / '{}.nete'.format(id)
+    def _filename(self, note_id):
+        return os.path.join(self.base_dir, '{!s}.nete'.format(note_id))
 
     def _status_filename(self):
         return os.path.join(self.base_dir, self.STATUS_FILENAME)

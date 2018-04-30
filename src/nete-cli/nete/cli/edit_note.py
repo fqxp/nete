@@ -65,7 +65,7 @@ def parse_editable_note(formatted_note):
     if headers == {}:
         raise ParseError('No headers found.')
 
-    allowed_headers = (mapping['header'] for mapping in HEADER_MAPPINGS)
+    allowed_headers = list(mapping['header'] for mapping in HEADER_MAPPINGS)
     invalid_headers = ', '.join(key
                                 for key in headers.keys()
                                 if key not in allowed_headers)
