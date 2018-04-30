@@ -78,12 +78,13 @@ def build_parser():
 
 defaults = {
     'debug': False,
-    'api.socket': os.path.join(XDG_RUNTIME_DIR, 'nete', 'socket'),
+    'api.socket': os.path.join(XDG_RUNTIME_DIR, 'nete', 'socket')
+        if XDG_RUNTIME_DIR else None,
     'logfile': None,
     'storage.type': 'filesystem',
     'storage.base_dir': os.path.join(
-        XDG_DATA_HOME,
-        'nete/backend/storage'),
+        XDG_DATA_HOME, 'nete', 'backend', 'storage')
+        if XDG_DATA_HOME else None,
     'sync.url': None,
 }
 
