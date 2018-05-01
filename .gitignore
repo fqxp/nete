@@ -7,7 +7,7 @@ sdist/
 *.egg
 .eggs/
 .pytest_cache/
-venv/
+venv*/
 
 # sphinx
 _build/
@@ -17,7 +17,5 @@ _build/
 coverage.xml
 
 # nete
-cli.rc
-backend.rc
-remote-cli.rc
-remote-backend.rc
+cli*.rc
+backend*.rc
