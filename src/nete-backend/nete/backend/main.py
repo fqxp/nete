@@ -8,7 +8,7 @@ import os.path
 import sys
 try:
     import aioreloader
-except ModuleNotFoundError:
+except ImportError:
     aioreloader = None
 
 logger = logging.getLogger(__name__)
