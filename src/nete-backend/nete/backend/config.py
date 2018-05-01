@@ -7,7 +7,7 @@ import pkg_resources
 
 logger = logging.getLogger(__name__)
 
-__version__ = pkg_resources.get_distribution('nete-cli').version
+__version__ = pkg_resources.get_distribution('nete-backend').version
 
 DEFAULT_CONFIG_FILENAME = os.path.join(
     XDG_CONFIG_HOME,

@@ -2,11 +2,14 @@
 
 set -e
 
-for pkg_base in src/nete-common src/nete-backend src/nete-cli ; do
+declare -a pkgs=(src/nete-common src/nete-backend src/nete-cli)
+
+for pkg_base in ${pkgs[@]} ; do
     (
         cd "$pkg_base" || exit 1
-        rm dist/*
+        rm -f dist/*
         ./setup.py sdist
-        /usr/bin/pip install --user --upgrade dist/*.tar.gz
     )
 done
+
+pip3 install --user --upgrade -r requirements.txt ${pkgs[@]/%//dist/*.tar.gz}
