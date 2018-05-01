@@ -63,16 +63,39 @@ class Config:
 
 def build_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-c', '--config', default=None)
-    parser.add_argument('--no-rc', action='store_true', default=False)
-    parser.add_argument('-D', '--debug', action='store_true')
-    parser.add_argument('-S', '--api-socket', dest='api.socket')
-    parser.add_argument('-s', '--storage', dest='storage.type')
-    parser.add_argument('--logfile', dest='logfile')
-    parser.add_argument('--storage-base-dir', dest='storage.base_dir')
-    parser.add_argument('--sync-url', dest='sync.url')
-    parser.add_argument('-V', '--version', action='version',
-                        version=__version__)
+    parser.add_argument(
+        '-c', '--config',
+        default=None,
+        help='config file [{}]'.format(DEFAULT_CONFIG_FILENAME))
+    parser.add_argument(
+        '--no-rc',
+        action='store_true',
+        default=False,
+        help='don’t load any config file at all')
+    parser.add_argument(
+        '-D', '--debug',
+        action='store_true',
+        help='enable debug logging')
+    parser.add_argument(
+        '-S', '--api-socket',
+        dest='api.socket',
+        help='socket filename [{}]'.format(defaults['api.socket']))
+    parser.add_argument(
+        '--logfile',
+        dest='logfile',
+        help='write log messages to this file [stdout]')
+    parser.add_argument(
+        '--storage-base-dir',
+        dest='storage.base_dir',
+        help='directory for storing notes [{}]'.format(defaults['storage.base_dir']))
+    parser.add_argument(
+        '--sync-url',
+        dest='sync.url',
+        help='URL of nete backend to synchronize with []')
+    parser.add_argument(
+        '-V', '--version',
+        action='version',
+        version=__version__)
     return parser
 
 
