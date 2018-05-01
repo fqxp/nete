@@ -14,6 +14,10 @@ DEFAULT_CONFIG_FILENAME = os.path.join(
     'nete',
     'backend.rc')
 
+DEFAULT_SOCKET_FILENAME = None
+if XDG_RUNTIME_DIR:
+    DEFAULT_SOCKET_FILENAME = os.path.join(XDG_RUNTIME_DIR, 'nete', 'socket')
+
 
 class Config:
 
@@ -101,8 +105,7 @@ def build_parser():
 
 defaults = {
     'debug': False,
-    'api.socket': os.path.join(XDG_RUNTIME_DIR, 'nete', 'socket')
-        if XDG_RUNTIME_DIR else None,
+    'api.socket': DEFAULT_SOCKET_FILENAME,
     'logfile': None,
     'storage.type': 'filesystem',
     'storage.base_dir': os.path.join(
