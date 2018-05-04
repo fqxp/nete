@@ -3,7 +3,6 @@ from nete.common.schemas.note_schema import NoteSchema
 from urllib.parse import urljoin
 import aiohttp
 import logging
-import urllib.parse
 import uuid
 
 logger = logging.getLogger(__name__)
@@ -18,12 +17,11 @@ class Synchronizer:
         self._prepare_url(sync_url)
 
     def _prepare_url(self, sync_url):
-        parsed_url = urllib.parse.urlparse(sync_url)
-        if parsed_url.scheme == 'local':
-            # the unix domain connector still expects a valid
+        if sync_url.is_socket_url():
+            # the unix domain connector expects a valid
             # hostname in the URL
             self.base_url = 'http://localhost'
-            self.connector = aiohttp.UnixConnector(parsed_url.path)
+            self.connector = aiohttp.UnixConnector(sync_url.socket_path)
         else:
             self.base_url = sync_url
             self.connector = aiohttp.TCPConnector()

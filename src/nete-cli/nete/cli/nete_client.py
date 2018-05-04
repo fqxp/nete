@@ -17,26 +17,18 @@ class ServerError(Exception):
 class NeteClient:
 
     def __init__(self, backend_url):
-        self.base_url = self._prepare_base_url(backend_url)
-        self.session = self._build_session()
+        self._prepare_base_url(backend_url)
         self.note_schema = NoteSchema()
         self.note_index_schema = NoteIndexSchema()
 
     def _prepare_base_url(self, backend_url):
-        parsed_url = urllib.parse.urlparse(backend_url)
-
-        if parsed_url.scheme == 'local':
-            # requests expects a quoted path like http+unix://%2Ftmp%2Fsocket
-            quoted_path = urllib.parse.quote(parsed_url.path, safe='')
-            return 'http+unix://{}'.format(quoted_path)
-        else:
-            return backend_url
-
-    def _build_session(self):
-        if self.base_url.startswith('http+unix:'):
-            return requests_unixsocket.Session()
-        else:
-            return requests.Session()
+        if backend_url.is_socket_url():
+            quoted_path = urllib.parse.quote(backend_url.socket_path, safe='')
+            self.base_url = 'http+unix://{}'.format(quoted_path)
+            self.session = requests_unixsocket.Session()
+        elif backend_url.is_http_url():
+            self.base_url = backend_url.base_url
+            self.session = requests.Session()
 
     def list(self):
         response = self._get('/notes')

@@ -1,3 +1,4 @@
+from nete.common.nete_url import NeteUrl
 from .app import create_app
 from .config import config
 from .storage.filesystem import FilesystemStorage
@@ -44,7 +45,8 @@ def main():
     storage = build_storage(config)
     storage.open()
 
-    app = create_app(storage, config['sync.url'])
+    sync_url = NeteUrl.from_string(config['sync.url']) if config['sync.url'] else None
+    app = create_app(storage, sync_url)
 
     if config['debug'] and aioreloader:
         aioreloader.start(hook=storage.close)

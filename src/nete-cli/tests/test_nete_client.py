@@ -1,4 +1,5 @@
 from nete.cli.nete_client import NeteClient, NotFound
+from nete.common.nete_url import NeteUrl
 from nete.common.models import Note
 import datetime
 import json
@@ -12,7 +13,7 @@ class TestNeteClient:
 
     @pytest.fixture
     def nete_client(self):
-        return NeteClient('mock://server')
+        return NeteClient(NeteUrl.from_string('http://nete.io'))
 
     @pytest.fixture
     def server_mock(self):
@@ -20,7 +21,7 @@ class TestNeteClient:
             yield m
 
     def test_list(self, nete_client, server_mock):
-        server_mock.get('mock://server/notes', text=json.dumps([
+        server_mock.get('http://nete.io/notes', text=json.dumps([
             {
                 'id': 'b08cee6f-cc15-44d5-86d4-b20dfb1295b8',
                 'revision_id': '0244174a-3dcf-4cca-af46-5f5063d53599',
@@ -62,7 +63,7 @@ class TestNeteClient:
         ]
 
     def test_get_note(self, nete_client, server_mock):
-        server_mock.get('mock://server/notes/ID', text=json.dumps({
+        server_mock.get('http://nete.io/notes/ID', text=json.dumps({
             'id': '1035acb6-839f-43ea-a426-7598c1ba952c',
             'revision_id': '9035acb6-839f-43ea-a426-7598c1ba952c',
             'title': 'TITLE',
@@ -85,7 +86,7 @@ class TestNeteClient:
     def test_get_note_raises_NotFound_exception(self, nete_client,
                                                 server_mock):
         server_mock.get(
-            'mock://server/notes/NON-EXISTING-ID',
+            'http://nete.io/notes/NON-EXISTING-ID',
             status_code=404)
 
         with pytest.raises(NotFound):
@@ -93,7 +94,7 @@ class TestNeteClient:
 
     @pytest.mark.freeze_time
     def test_create_note(self, nete_client, server_mock):
-        server_mock.post('mock://server/notes', text=json.dumps({
+        server_mock.post('http://nete.io/notes', text=json.dumps({
             'id': 'b903730e-7553-45eb-97a0-45414cd971aa',
             'revision_id': '9903730e-7553-45eb-97a0-45414cd971aa',
             'title': 'TITLE',
@@ -123,7 +124,7 @@ class TestNeteClient:
     def test_update_note(self, nete_client, server_mock):
         old_revision_id = uuid.uuid4()
         server_mock.put(
-            'mock://server/notes/94e89308-b33e-4543-9415-be84cb1e6d38',
+            'http://nete.io/notes/94e89308-b33e-4543-9415-be84cb1e6d38',
             request_headers={
                 'if-match': str(old_revision_id),
             },
@@ -155,7 +156,7 @@ class TestNeteClient:
             self, nete_client, server_mock):
         old_revision_id = uuid.uuid4()
         server_mock.put(
-            'mock://server/notes/a365545f-c6cc-497a-9f89-4d38c0b29798',
+            'http://nete.io/notes/a365545f-c6cc-497a-9f89-4d38c0b29798',
             headers={
                 'if-match': str(old_revision_id),
             },
@@ -173,7 +174,7 @@ class TestNeteClient:
 
     def test_delete_note(self, nete_client, server_mock):
         server_mock.delete(
-            'mock://server/notes/2a22f34b-8075-4ce9-a732-c535a9b24347',
+            'http://nete.io/notes/2a22f34b-8075-4ce9-a732-c535a9b24347',
             status_code=201)
 
         nete_client.delete_note('2a22f34b-8075-4ce9-a732-c535a9b24347')
@@ -181,7 +182,7 @@ class TestNeteClient:
         assert server_mock.called
 
     def test_delete_raises_NotFound_exception(self, nete_client, server_mock):
-        server_mock.delete('mock://server/notes/NON-EXISTENT-ID',
+        server_mock.delete('http://nete.io/notes/NON-EXISTENT-ID',
                            status_code=404)
 
         with pytest.raises(NotFound):

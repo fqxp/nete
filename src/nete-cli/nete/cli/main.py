@@ -1,3 +1,4 @@
+from nete.common.nete_url import NeteUrl
 from nete.common.xdg import XDG_RUNTIME_DIR
 from .config import Config
 from .parse_args import parse_args
@@ -21,7 +22,8 @@ def main():
     config = Config(defaults)
     args = parse_args(config)
 
-    nete_client = NeteClient(config['backend.url'])
+    nete_url = NeteUrl.from_string(config['backend.url'])
+    nete_client = NeteClient(nete_url)
     shell = NeteShell(nete_client)
 
     result = shell.run(args)
