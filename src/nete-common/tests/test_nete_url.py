@@ -7,7 +7,7 @@ def test_from_string_with_local_url():
     assert nete_url.is_socket_url()
     assert not nete_url.is_http_url()
     assert not nete_url.is_ssh_url()
-    assert nete_url.base_url == None
+    assert nete_url.base_url is None
     assert nete_url.socket_path == '/tmp/socket'
 
 
@@ -18,7 +18,7 @@ def test_from_string_with_http_url(scheme):
     assert nete_url.is_http_url()
     assert not nete_url.is_ssh_url()
     assert nete_url.base_url == '{}://nete.io/path'.format(scheme)
-    assert nete_url.socket_path == None
+    assert nete_url.socket_path is None
 
 
 def test_from_string_raises_with_unsupported_scheme():

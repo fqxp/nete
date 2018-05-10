@@ -6,8 +6,9 @@ import uuid
 
 
 class NeteShell:
-    def __init__(self, nete_client):
+    def __init__(self, nete_client, config):
         self.nete_client = nete_client
+        self.config = config
 
     def run(self, args):
         cmd_kwargs = {
