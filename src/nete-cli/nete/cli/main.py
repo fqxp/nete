@@ -24,7 +24,7 @@ def main():
 
     nete_url = NeteUrl.from_string(config['backend.url'])
     nete_client = NeteClient(nete_url)
-    shell = NeteShell(nete_client)
+    shell = NeteShell(nete_client, config)
 
     result = shell.run(args)
     sys.exit(result)

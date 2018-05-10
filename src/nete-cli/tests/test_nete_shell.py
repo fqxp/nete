@@ -15,7 +15,7 @@ def nete_client():
 
 @pytest.fixture
 def nete_shell(nete_client):
-    return nete.cli.nete_shell.NeteShell(nete_client)
+    return nete.cli.nete_shell.NeteShell(nete_client, config={})
 
 
 def test_ls_returns_list_of_notes(nete_shell, nete_client, capsys):
@@ -59,7 +59,7 @@ def test_cat_outputs_note(nete_shell, nete_client, capsys):
 
 
 def test_cat_prints_error_if_not_found(nete_shell, nete_client, capsys):
-    nete_client.get_note.side_effect = NotFound()
+    nete_client.get_note.side_effect = NotFound('ID')
 
     result = nete_shell.cat(['02665506-be9c-4c72-8c93-da8625061168'])
 
@@ -123,7 +123,7 @@ def test_edit_lets_user_edit_note_and_saves_it(nete_shell, nete_client):
 
 def test_edit_prints_not_found_if_note_doesnt_exist(
         nete_shell, nete_client, capsys):
-    nete_client.get_note.side_effect = NotFound
+    nete_client.get_note.side_effect = NotFound('ID')
 
     result = nete_shell.edit('80463678-3882-458e-a12c-eb78059f3a52')
 
@@ -142,7 +142,7 @@ def test_rm_deletes_note(nete_shell, nete_client):
 
 def test_rm_prints_not_found_if_note_doesnt_exist(
         nete_shell, nete_client, capsys):
-    nete_client.delete_note.side_effect = NotFound
+    nete_client.delete_note.side_effect = NotFound('ID')
 
     result = nete_shell.rm(['80463678-3882-458e-a12c-eb78059f3a52'])
 
