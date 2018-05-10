@@ -67,6 +67,14 @@ class NeteShell:
     def sync(self):
         self.nete_client.sync()
 
+    def socket(self):
+        nete_url = NeteUrl.from_string(self.config['backend.url'])
+        if nete_url.is_socket_url():
+            print(nete_url.socket_path)
+            return 0
+        else:
+            return 1
+
     def complete_note_id(self, text):
         notes = self.nete_client.list()
         return (

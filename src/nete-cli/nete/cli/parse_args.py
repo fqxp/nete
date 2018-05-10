@@ -44,6 +44,10 @@ def parse_args(config):
     rm_parser.set_defaults(cmd='rm')
     rm_parser.set_defaults(options=options(rm_parser))
 
+    socket_parser = subparsers.add_parser('socket', help='Print backend socket path')
+    socket_parser.set_defaults(cmd='socket')
+    socket_parser.set_defaults(options=options(socket_parser))
+
     sync_parser = subparsers.add_parser(
         'sync',
         help='Synchronize with remote backend')
