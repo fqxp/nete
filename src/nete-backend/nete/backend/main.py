@@ -32,20 +32,24 @@ def prepare(config):
 
 def main():
     config.parse_args(sys.argv[1:])
+
+    log_level = logging.DEBUG if config['debug'] else logging.INFO
     logging.basicConfig(
         filename=config['logfile'],
         filemode='w',
-        level=logging.INFO)
+        level=log_level)
+
+    logger.debug('Configuration')
+    for key in iter(config):
+        logger.debug('  {} = {}'.format(key, config[key]))
 
     prepare(config)
-
-    log_level = logging.DEBUG if config['debug'] else logging.INFO
-    logging.getLogger().setLevel(log_level)
 
     storage = build_storage(config)
     storage.open()
 
     sync_url = NeteUrl.from_string(config['sync.url']) if config['sync.url'] else None
+    logger.debug('Sync URL: {}'.format(sync_url))
     app = create_app(storage, sync_url)
 
     if config['debug'] and aioreloader:

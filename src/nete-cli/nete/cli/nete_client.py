@@ -1,17 +1,9 @@
+from .exceptions import NotFound, ServerError
 from nete.common.schemas.note_schema import NoteSchema
 from nete.common.schemas.note_index_schema import NoteIndexSchema
 import requests
 import requests_unixsocket
 import urllib.parse
-
-
-class NotFound(Exception):
-    pass
-
-
-class ServerError(Exception):
-    def __init__(self, error):
-        self.error = error
 
 
 class NeteClient:
