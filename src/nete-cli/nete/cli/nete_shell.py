@@ -1,6 +1,6 @@
 from .edit_note import edit_note, render_editable_note
-from .exceptions import NeteException
 from .nete_client import NotFound
+from nete.common.exceptions import NeteException
 from nete.common.models import Note
 from nete.common.nete_url import NeteUrl
 import uuid

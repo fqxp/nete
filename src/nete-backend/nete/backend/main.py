@@ -49,7 +49,6 @@ def main():
     storage.open()
 
     sync_url = NeteUrl.from_string(config['sync.url']) if config['sync.url'] else None
-    logger.debug('Sync URL: {}'.format(sync_url))
     app = create_app(storage, sync_url)
 
     if config['debug'] and aioreloader:
