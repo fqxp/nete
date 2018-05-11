@@ -41,6 +41,12 @@ class Config:
                 or self.file_config.get(name)
                 or self.defaults.get(name))
 
+    def __iter__(self):
+        return iter(set([
+            *self.args.__dict__.keys(),
+            *self.file_config.keys(),
+            *self.defaults.keys()]))
+
     def _load_config(self):
 
         if self.args.no_rc:

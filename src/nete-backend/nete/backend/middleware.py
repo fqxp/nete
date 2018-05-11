@@ -35,7 +35,3 @@ async def error_middleware(request, handler):
         logger.error(e)
         logger.error(traceback.format_exc())
         raise web.HTTPBadRequest(body=str(e))
-    except Exception as e:
-        logger.error(e)
-        logger.error(traceback.format_exc())
-        raise
