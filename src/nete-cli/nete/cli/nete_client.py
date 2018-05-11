@@ -1,4 +1,4 @@
-from .exceptions import NotFound, ServerError
+from nete.common.exceptions import NotFound, ServerError
 from nete.common.schemas.note_schema import NoteSchema
 from nete.common.schemas.note_index_schema import NoteIndexSchema
 import requests
