@@ -1,6 +1,7 @@
 from nete.common.exceptions import NotFound, ServerError
 from nete.common.schemas.note_schema import NoteSchema
 from nete.common.schemas.note_index_schema import NoteIndexSchema
+from nete.common.nete_url import ConnectionType
 import requests
 import requests_unixsocket
 import urllib.parse
@@ -14,11 +15,11 @@ class NeteClient:
         self.note_index_schema = NoteIndexSchema()
 
     def _prepare_base_url(self, backend_url):
-        if backend_url.is_socket_url():
+        if backend_url.connection_type == ConnectionType.UNIX:
             quoted_path = urllib.parse.quote(backend_url.socket_path, safe='')
             self.base_url = 'http+unix://{}'.format(quoted_path)
             self.session = requests_unixsocket.Session()
-        elif backend_url.is_http_url():
+        elif backend_url.connection_type == ConnectionType.TCP:
             self.base_url = backend_url.base_url
             self.session = requests.Session()
 

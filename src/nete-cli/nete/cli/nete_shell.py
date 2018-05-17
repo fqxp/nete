@@ -2,7 +2,7 @@ from .edit_note import edit_note, render_editable_note
 from .nete_client import NotFound
 from nete.common.exceptions import NeteException
 from nete.common.models import Note
-from nete.common.nete_url import NeteUrl
+from nete.common.nete_url import NeteUrl, ConnectionType
 import uuid
 
 
@@ -75,7 +75,7 @@ class NeteShell:
 
     def socket(self):
         nete_url = NeteUrl.from_string(self.config['backend.url'])
-        if nete_url.is_socket_url():
+        if nete_url.connection_type == ConnectionType.UNIX:
             print(nete_url.socket_path)
             return 0
         else:

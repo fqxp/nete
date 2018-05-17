@@ -12,3 +12,7 @@ class NotFound(NeteException):
 
 class ServerError(NeteException):
     pass
+
+
+class SshError(NeteException):
+    pass

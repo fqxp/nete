@@ -1,11 +1,17 @@
+from enum import Enum
 from urllib.parse import urlparse
+
+class ConnectionType(Enum):
+    TCP = 1
+    UNIX = 2
+    SSH = 3
 
 
 class NeteUrl:
 
     def __init__(self, connection_type, base_url=None, socket_path=None,
                  ssh_host=None, ssh_port=None, username=None):
-        if connection_type not in ('local', 'http', 'https', 'http+ssh'):
+        if connection_type not in list(ConnectionType):
             raise ConnectionTypeNotSupported(connection_type)
 
         self.connection_type = connection_type
@@ -21,27 +27,18 @@ class NeteUrl:
         connection_type = parsed_url.scheme
 
         if connection_type in ('http', 'https'):
-            return cls(connection_type,
+            return cls(ConnectionType.TCP,
                        base_url=url)
         elif connection_type == 'local':
-            return cls(connection_type,
+            return cls(ConnectionType.UNIX,
                        socket_path=parsed_url.path)
         elif connection_type == 'http+ssh':
-            return cls(connection_type,
+            return cls(ConnectionType.SSH,
                        ssh_host=parsed_url.hostname,
                        ssh_port=parsed_url.port,
                        username=parsed_url.username)
         else:
             raise ConnectionTypeNotSupported(connection_type)
-
-    def is_socket_url(self):
-        return self.connection_type == 'local'
-
-    def is_ssh_url(self):
-        return self.connection_type == 'http+ssh'
-
-    def is_http_url(self):
-        return self.connection_type in ('http', 'https')
 
     def __str__(self):
         return '<NeteUrl connection_type={} base_url={} socket_path={} ssh_host={} ssh_port={} username={}>'.format(
