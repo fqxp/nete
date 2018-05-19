@@ -25,15 +25,16 @@ defaults = {
     'api.socket': DEFAULT_SOCKET_FILENAME,
     'logfile': '/dev/stdout',
     'storage.type': 'filesystem',
-    'storage.base_dir': os.path.join(
-        XDG_DATA_HOME, 'nete', 'backend', 'storage')
-        if XDG_DATA_HOME else None,
+    'storage.base_dir': (
+        os.path.join(XDG_DATA_HOME, 'nete', 'backend', 'storage')
+        if XDG_DATA_HOME else None),
     'sync.url': None,
 }
 
 types = {
     'sync.url': NeteUrl.from_string,
 }
+
 
 class Config:
 
@@ -54,8 +55,8 @@ class Config:
 
     def __getitem__(self, name):
         value = (self.args.__dict__.get(name)
-                or self.file_config.get(name)
-                or self.defaults.get(name))
+                 or self.file_config.get(name)
+                 or self.defaults.get(name))
         value_type = types.get(name, str)
         return value_type(value) if value is not None else None
 
@@ -74,7 +75,8 @@ class Config:
         elif os.path.exists(DEFAULT_CONFIG_FILENAME):
             return self._read_file(DEFAULT_CONFIG_FILENAME)
         else:
-            logger.info('Didn’t find any config file, continuing with default config')
+            logger.info('Didn’t find any config file, '
+                        'continuing with default config')
             return {}
 
     def _read_file(self, filename):

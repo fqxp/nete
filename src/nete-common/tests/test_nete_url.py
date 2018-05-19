@@ -1,4 +1,5 @@
-from nete.common.nete_url import NeteUrl, ConnectionType, ConnectionTypeNotSupported
+from nete.common.nete_url import (
+    NeteUrl, ConnectionType, ConnectionTypeNotSupported)
 import pytest
 
 

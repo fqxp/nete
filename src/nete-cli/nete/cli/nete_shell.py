@@ -46,7 +46,10 @@ class NeteShell:
 
     def ls(self):
         notes = self.nete_client.list()
-        sort_fn = lambda note: note.title
+
+        def sort_fn(note):
+            return note.title
+
         for note in sorted(notes, key=sort_fn):
             print('{id}   {title}'.format(**note.__dict__))
         return 0

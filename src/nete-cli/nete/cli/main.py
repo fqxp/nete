@@ -10,7 +10,8 @@ import sys
 
 DEFAULT_SOCKET_FILENAME = None
 if XDG_RUNTIME_DIR:
-    DEFAULT_SOCKET_FILENAME = 'local:{}'.format(os.path.join(XDG_RUNTIME_DIR, 'nete', 'socket'))
+    DEFAULT_SOCKET_FILENAME = 'local:{}'.format(
+        os.path.join(XDG_RUNTIME_DIR, 'nete', 'socket'))
 
 defaults = {
     'debug': False,
