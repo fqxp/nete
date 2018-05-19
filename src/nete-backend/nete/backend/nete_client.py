@@ -1,4 +1,5 @@
-from .connection_method import TcpConnectionMethod, SocketConnectionMethod, SshConnectionMethod
+from .connection_method import (
+    TcpConnectionMethod, SocketConnectionMethod, SshConnectionMethod)
 from nete.common.nete_url import ConnectionType
 from nete.common.exceptions import ServerError
 from nete.common.schemas.note_schema import NoteSchema
@@ -29,10 +30,10 @@ class NeteClient:
         return CONNECTION_TYPE_MAPPING[url.connection_type](url)
 
     async def __aenter__(self):
-         await self.connection_method.start()
-         self.session = aiohttp.ClientSession(
-             connector=self.connection_method.connector())
-         return self
+        await self.connection_method.start()
+        self.session = aiohttp.ClientSession(
+            connector=self.connection_method.connector())
+        return self
 
     async def __aexit__(self, *args):
         await self.session.close()

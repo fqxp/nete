@@ -15,7 +15,7 @@ class Handler:
         self.storage = storage
         self.sync_url = sync_url
         self.note_schema = NoteSchema()
-        self.note_index_schema = NoteSchema(exclude=['text',])
+        self.note_index_schema = NoteSchema(exclude=['text'])
 
     async def index(self, request):
         notes = await self.storage.list()
@@ -74,7 +74,8 @@ class Handler:
 
         if note.revision_id == old_note.revision_id:
             raise web.HTTPUnprocessableEntity(
-                reason='New revision id needs to be different from old revision id')
+                reason=('New revision id needs to be different '
+                        'from old revision id'))
 
         changed_immutable_attributes = list(
             field
@@ -82,7 +83,8 @@ class Handler:
             if getattr(note, field) != getattr(old_note, field))
         if any(changed_immutable_attributes):
             raise web.HTTPUnprocessableEntity(
-                reason='Tried to update immutable attributes: {!r}'.format(changed_immutable_attributes))
+                reason=('Tried to update immutable attributes: {!r}'
+                        .format(changed_immutable_attributes)))
 
         await self.storage.write(note)
 
@@ -102,6 +104,7 @@ class Handler:
     async def synchronize(self, request):
         if not self.sync_url:
             raise web.HTTPInternalServerError(text='No sync URL defined')
+
         synchronizer = Synchronizer(self.storage, self.sync_url)
         await synchronizer.synchronize()
         return web.Response(status=204)

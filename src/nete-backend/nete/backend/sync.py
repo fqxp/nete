@@ -32,7 +32,6 @@ class Synchronizer:
             created_here = (
                 local_revisions.keys() -
                 remote_revisions.keys())
-
             both = (
                 local_revisions.keys() &
                 remote_revisions.keys())
@@ -41,20 +40,27 @@ class Synchronizer:
             updated_there = set()
             updated_here_and_there = set()
             for note_id in both:
-                if (local_revisions[note_id] != status[note_id] and
-                    remote_revisions[note_id] == status[note_id]):
+                is_changed_here = (local_revisions[note_id] != status[note_id])
+                is_changed_there = (remote_revisions[note_id] != status[note_id])
+                if (is_changed_here and not is_changed_there):
                     updated_here.add(note_id)
-                elif (local_revisions[note_id] == status[note_id] and
-                      remote_revisions[note_id] != status[note_id]):
+                elif (not is_changed_here and is_changed_there):
                     updated_there.add(note_id)
-                elif (local_revisions[note_id] != status[note_id] and
-                      remote_revisions[note_id] != status[note_id]):
+                elif (is_changed_here and is_changed_there):
                     updated_here_and_there.add(note_id)
 
-            logger.debug('Diff: {} updated here, {} updated there, {} updated here and there'.format(
-                len(updated_here),
-                len(updated_there),
-                len(updated_here_and_there)))
+            logger.debug(
+                'Diff: '
+                '{} created here, '
+                '{} created there, '
+                '{} updated here, '
+                '{} updated there, '
+                '{} updated here and there'.format(
+                    len(created_here),
+                    len(created_there),
+                    len(updated_here),
+                    len(updated_there),
+                    len(updated_here_and_there)))
 
             conflict_copy_ids = await self._create_conflict_copies(
                 updated_here_and_there)
