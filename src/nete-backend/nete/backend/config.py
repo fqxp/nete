@@ -1,3 +1,4 @@
+from nete.common.nete_url import NeteUrl
 from nete.common.xdg import XDG_CONFIG_HOME, XDG_DATA_HOME, XDG_RUNTIME_DIR
 import argparse
 import configparser
@@ -19,6 +20,21 @@ if XDG_RUNTIME_DIR:
     DEFAULT_SOCKET_FILENAME = os.path.join(XDG_RUNTIME_DIR, 'nete', 'socket')
 
 
+defaults = {
+    'debug': False,
+    'api.socket': DEFAULT_SOCKET_FILENAME,
+    'logfile': '/dev/stdout',
+    'storage.type': 'filesystem',
+    'storage.base_dir': os.path.join(
+        XDG_DATA_HOME, 'nete', 'backend', 'storage')
+        if XDG_DATA_HOME else None,
+    'sync.url': None,
+}
+
+types = {
+    'sync.url': NeteUrl.from_string,
+}
+
 class Config:
 
     def __init__(self, parser, defaults):
@@ -37,9 +53,11 @@ class Config:
         }
 
     def __getitem__(self, name):
-        return (self.args.__dict__.get(name)
+        value = (self.args.__dict__.get(name)
                 or self.file_config.get(name)
                 or self.defaults.get(name))
+        value_type = types.get(name, str)
+        return value_type(value) if value is not None else None
 
     def __iter__(self):
         return iter(set([
@@ -87,37 +105,10 @@ def build_parser():
         action='store_true',
         help='enable debug logging')
     parser.add_argument(
-        '-S', '--api-socket',
-        dest='api.socket',
-        help='socket filename [{}]'.format(defaults['api.socket']))
-    parser.add_argument(
-        '--logfile',
-        dest='logfile',
-        help='write log messages to this file [stdout]')
-    parser.add_argument(
-        '--storage-base-dir',
-        dest='storage.base_dir',
-        help='directory for storing notes [{}]'.format(defaults['storage.base_dir']))
-    parser.add_argument(
-        '--sync-url',
-        dest='sync.url',
-        help='URL of nete backend to synchronize with []')
-    parser.add_argument(
         '-V', '--version',
         action='version',
         version=__version__)
     return parser
 
-
-defaults = {
-    'debug': False,
-    'api.socket': DEFAULT_SOCKET_FILENAME,
-    'logfile': None,
-    'storage.type': 'filesystem',
-    'storage.base_dir': os.path.join(
-        XDG_DATA_HOME, 'nete', 'backend', 'storage')
-        if XDG_DATA_HOME else None,
-    'sync.url': None,
-}
 
 config = Config(build_parser(), defaults)
