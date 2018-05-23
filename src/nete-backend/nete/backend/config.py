@@ -10,24 +10,28 @@ logger = logging.getLogger(__name__)
 
 __version__ = pkg_resources.get_distribution('nete-backend').version
 
-DEFAULT_CONFIG_FILENAME = os.path.join(
-    XDG_CONFIG_HOME,
-    'nete',
-    'backend.rc')
+DEFAULT_CONFIG_FILENAME = None
+if XDG_CONFIG_HOME:
+    DEFAULT_CONFIG_FILENAME = os.path.join(
+        XDG_CONFIG_HOME, 'nete', 'backend.rc')
 
 DEFAULT_SOCKET_FILENAME = None
 if XDG_RUNTIME_DIR:
-    DEFAULT_SOCKET_FILENAME = os.path.join(XDG_RUNTIME_DIR, 'nete', 'socket')
+    DEFAULT_SOCKET_FILENAME = os.path.join(
+        XDG_RUNTIME_DIR, 'nete', 'socket')
+
+DEFAULT_STORAGE_BASE_DIR = None
+if XDG_DATA_HOME:
+    DEFAULT_STORAGE_BASE_DIR = os.path.join(
+        XDG_DATA_HOME, 'nete', 'backend', 'storage')
 
 
 defaults = {
     'debug': False,
     'api.socket': DEFAULT_SOCKET_FILENAME,
-    'logfile': '/dev/stdout',
+    'logfile': None,
     'storage.type': 'filesystem',
-    'storage.base_dir': (
-        os.path.join(XDG_DATA_HOME, 'nete', 'backend', 'storage')
-        if XDG_DATA_HOME else None),
+    'storage.base_dir': DEFAULT_STORAGE_BASE_DIR,
     'sync.url': None,
 }
 
