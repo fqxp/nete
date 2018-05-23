@@ -7,6 +7,14 @@ _beta software_
 
 # Installation
 
+## Prerequisites
+
+* Python >=3.5
+* libsodium
+* libkrb5-dev
+
+## `install.sh`
+
 This repository contains three packages `nete-common`, `nete-backend` and
 `nete-cli`. To build and install all of them, first read and then run the
 `install.sh` script.
